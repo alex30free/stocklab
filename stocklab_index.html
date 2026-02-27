@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alex — StockLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:        #080c10;
+      --surface:   #0d1318;
+      --surface2:  #111820;
+      --border:    #1c2830;
+      --border2:   #253340;
+      --text:      #c8d8e8;
+      --muted:     #4a6070;
+      --muted2:    #6a8090;
+      --accent:    #00e5a0;
+      --accent2:   #0099ff;
+      --accent3:   #f0a500;
+      --accent4:   #cc44ff;
+      --gold:      #f0c040;
+      --white:     #f0f4f8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.055) 2px, rgba(0,0,0,0.055) 4px
+      );
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* Grid background */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .glow-left {
+      position: fixed; top: -120px; left: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(0,229,160,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .glow-right {
+      position: fixed; bottom: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,153,255,0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 28px 80px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 56px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 64px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .brand { display: flex; flex-direction: column; gap: 10px; }
+
+    .brand-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: var(--accent);
+      text-transform: uppercase;
+      background: rgba(0,229,160,0.07);
+      border: 1px solid rgba(0,229,160,0.18);
+      padding: 4px 12px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(26px, 5vw, 44px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+
+    .brand-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted2);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.9;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2.2s ease infinite;
+    }
+
+    /* ── INTRO ── */
+    .intro {
+      margin-bottom: 52px;
+      animation: fadeDown 0.7s 0.1s ease both;
+      max-width: 640px;
+    }
+    .intro p {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--muted2);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 300;
+    }
+    .intro p strong { color: var(--text); font-weight: 400; }
+
+    /* ── CARDS GRID ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    @media (max-width: 680px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    /* ── INDIVIDUAL CARD ── */
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      padding: 36px 32px 32px;
+      text-decoration: none;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      min-height: 320px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .card-rsl::before   { background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%); }
+    .card-hlr::before   { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
+    .card-swe::before   { background: radial-gradient(ellipse at 20% 80%, rgba(204,68,255,0.06) 0%, transparent 65%); }
+    .card-deu::before   { background: radial-gradient(ellipse at 80% 80%, rgba(240,165,0,0.07) 0%, transparent 65%); }
+
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+    .card-rsl:hover { border-color: rgba(0,229,160,0.4); }
+    .card-hlr:hover { border-color: rgba(0,153,255,0.4); }
+    .card-swe:hover { border-color: rgba(204,68,255,0.4); }
+    .card-deu:hover { border-color: rgba(240,165,0,0.4); }
+
+    .card:hover::before { opacity: 1; }
+
+    /* Top accent line */
+    .card-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .card-rsl .card-line { background: var(--accent); }
+    .card-hlr .card-line { background: var(--accent2); }
+    .card-swe .card-line { background: var(--accent4); }
+    .card-deu .card-line { background: var(--accent3); }
+
+    /* Corner number */
+    .card-num {
+      position: absolute; top: 28px; right: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 56px; font-weight: 600;
+      line-height: 1; letter-spacing: -0.04em;
+      opacity: 0.04; color: var(--white);
+      pointer-events: none; user-select: none;
+    }
+
+    /* Tag */
+    .card-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid;
+      display: inline-block;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+
+    .card-rsl .card-tag { color: var(--accent);  border-color: rgba(0,229,160,0.25);  background: rgba(0,229,160,0.06); }
+    .card-hlr .card-tag { color: var(--accent2); border-color: rgba(0,153,255,0.25); background: rgba(0,153,255,0.06); }
+    .card-swe .card-tag { color: var(--accent4); border-color: rgba(204,68,255,0.25); background: rgba(204,68,255,0.06); }
+    .card-deu .card-tag { color: var(--accent3); border-color: rgba(240,165,0,0.25);  background: rgba(240,165,0,0.06); }
+
+    /* Title */
+    .card-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(16px, 2.2vw, 21px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .card-rsl .card-title em { font-style: normal; color: var(--accent); }
+    .card-hlr .card-title em { font-style: normal; color: var(--accent2); }
+    .card-swe .card-title em { font-style: normal; color: var(--accent4); }
+    .card-deu .card-title em { font-style: normal; color: var(--accent3); }
+
+    /* Flag strip for German card */
+    .flag-strip {
+      display: flex;
+      width: 28px; height: 5px;
+      margin-bottom: 6px;
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .flag-strip span { flex: 1; }
+    .fs1 { background: #1a1a1a; }
+    .fs2 { background: #e03030; }
+    .fs3 { background: #f0a500; }
+
+    /* Description */
+    .card-desc {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px; font-weight: 300;
+      color: var(--muted2);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 24px;
+    }
+
+    /* Stat pills */
+    .card-stats {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .card-stat {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; padding: 4px 10px;
+      border: 1px solid var(--border2);
+      color: var(--muted2);
+      background: rgba(255,255,255,0.02);
+      white-space: nowrap;
+    }
+
+    /* CTA */
+    .card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 12px 18px;
+      border: 1px solid;
+      color: var(--bg);
+      transition: opacity 0.2s;
+      position: relative; z-index: 1;
+    }
+    .card-rsl .card-cta { background: var(--accent);  border-color: var(--accent); }
+    .card-hlr .card-cta { background: var(--accent2); border-color: var(--accent2); }
+    .card-swe .card-cta { background: var(--accent4); border-color: var(--accent4); }
+    .card-deu .card-cta { background: var(--accent3); border-color: var(--accent3); }
+    .card:hover .card-cta { opacity: 0.88; }
+
+    .arrow { font-size: 14px; transition: transform 0.2s; }
+    .card:hover .arrow { transform: translateX(5px); }
+
+    /* ── ABOUT STRIP ── */
+    hr.divider {
+      margin: 72px 0 40px;
+      border: none;
+      border-top: 1px solid var(--border);
+      animation: fadeDown 0.7s 0.35s ease both;
+    }
+
+    .about {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    @media (max-width: 600px) { .about { grid-template-columns: 1fr; } }
+
+    .about-item { background: var(--surface); padding: 24px 26px; }
+    .about-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .about-val {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      animation: fadeDown 0.7s 0.5s ease both;
+    }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
+      50%      { box-shadow: 0 0 0 5px rgba(0,229,160,0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-left"></div>
+<div class="glow-right"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-tag">Equity Research Lab</div>
+        <h1>Stock<em>Lab</em></h1>
+        <div class="brand-sub">Systematic strategies · Swedish &amp; German markets</div>
+      </div>
+      <div class="header-right">
+        <div><span class="live-dot"></span>Auto-updated weekly</div>
+        <div>Nasdaq Stockholm · Xetra Frankfurt</div>
+        <div>Data source: Yahoo Finance</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- INTRO -->
+  <div class="intro">
+    <p>
+      Four <strong>data-driven, rules-based strategies</strong> across the Swedish and German stock markets —
+      each fully automated and updated every Friday evening after market close.
+      No opinions. No noise. Just systematic signals.
+    </p>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards">
+
+    <!-- Card 1: RSL -->
+    <a href="https://alex30free.github.io/swedish-rsl-screener/" class="card card-rsl">
+      <div class="card-line"></div>
+      <div class="card-num">01</div>
+      <div class="card-tag">Momentum · Sweden</div>
+      <div class="card-title">Relative Strength<br><em>by Levy</em></div>
+      <div class="card-desc">
+        Ranks all Swedish stocks by their Levy RSL score — the ratio of current price to its 130-day moving average. The top 20 strongest momentum stocks, rebalanced weekly.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">RSL · 130-day SMA</span>
+        <span class="card-stat">Top 20 ranked</span>
+        <span class="card-stat">~370 stocks</span>
+        <span class="card-stat">SEK</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- Card 2: High-Return Low-Risk -->
+    <a href="https://alex30free.github.io/swedish-stock-screener/" class="card card-hlr">
+      <div class="card-line"></div>
+      <div class="card-num">02</div>
+      <div class="card-tag">Quality · Sweden</div>
+      <div class="card-title">High-Return<br><em>&amp; Low-Risk</em></div>
+      <div class="card-desc">
+        Screens for stocks that combine strong historical returns with low volatility — identifying companies with durable financial quality and resilient price behaviour.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">Return / Risk ratio</span>
+        <span class="card-stat">Quality filter</span>
+        <span class="card-stat">~370 stocks</span>
+        <span class="card-stat">SEK</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- Card 3: Swedish Compound Momentum -->
+    <a href="https://alex30free.github.io/swedish-compound-momentum/" class="card card-swe">
+      <div class="card-line"></div>
+      <div class="card-num">03</div>
+      <div class="card-tag">Compound Momentum · Sweden</div>
+      <div class="card-title">Swedish Compound<br><em>Momentum</em></div>
+      <div class="card-desc">
+        Combines 12-month, 6-month and 3-month momentum into a single composite score. Only stocks trading above their 130-day moving average (RSL ≥ 1.0) are eligible.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">12m · 6m · 3m</span>
+        <span class="card-stat">RSL filter</span>
+        <span class="card-stat">Top 20</span>
+        <span class="card-stat">SEK</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- Card 4: German Momentum -->
+    <a href="https://alex30free.github.io/german-momentum-screener/" class="card card-deu">
+      <div class="card-line"></div>
+      <div class="card-num">04</div>
+      <div class="card-tag">Compound Momentum · Germany</div>
+      <div class="flag-strip">
+        <span class="fs1"></span>
+        <span class="fs2"></span>
+        <span class="fs3"></span>
+      </div>
+      <div class="card-title">German<br><em>Momentum</em></div>
+      <div class="card-desc">
+        Compound momentum across DAX, MDAX and SDAX — ~170 German stocks ranked by composite 12m/6m/3m momentum. Includes rank history charts that build over time.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">DAX · MDAX · SDAX</span>
+        <span class="card-stat">RSL filter</span>
+        <span class="card-stat">Top 20 + history</span>
+        <span class="card-stat">EUR</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ABOUT STRIP -->
+  <div class="about">
+    <div class="about-item">
+      <div class="about-label">Markets</div>
+      <div class="about-val">Nasdaq Stockholm<br>Xetra Frankfurt</div>
+    </div>
+    <div class="about-item">
+      <div class="about-label">Update Schedule</div>
+      <div class="about-val">Every Friday<br>~18:30 CET</div>
+    </div>
+    <div class="about-item">
+      <div class="about-label">Methodology</div>
+      <div class="about-val">Rules-based &amp; systematic.<br>No discretion, no bias.</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>⚠ For informational purposes only — not financial advice.</span>
+    <span>
+      <a href="https://alex30free.github.io/swedish-rsl-screener/">RSL</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/swedish-stock-screener/">Low-Risk</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/swedish-compound-momentum/">SE Momentum</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/german-momentum-screener/">DE Momentum</a>
+    </span>
+  </footer>
+
+</div>
+</body>
+</html>
