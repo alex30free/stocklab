@@ -21,6 +21,8 @@
       --accent:    #00e5a0;
       --accent2:   #0099ff;
       --gold:      #f0c040;
+      --amber:     #c8922a;
+      --amber-hi:  #f0b84a;
       --white:     #f0f4f8;
     }
 
@@ -225,11 +227,26 @@
       pointer-events: none;
     }
 
-    .card-rsl::before   { background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%); }
-    .card-hlr::before   { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
-    .card-cmo::before   { background: radial-gradient(ellipse at 20% 20%, rgba(240,192,64,0.07) 0%, transparent 65%); }
-    .card-dmo::before   { background: radial-gradient(ellipse at 80% 20%, rgba(255,136,68,0.07) 0%, transparent 65%); }
-    .card-idx::before   { background: radial-gradient(ellipse at 50% 20%, rgba(160,100,255,0.07) 0%, transparent 65%); }
+    .card-rsl::before {
+      background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%);
+    }
+    .card-hlr::before {
+      background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%);
+    }
+    .card-scm::before {
+      background: radial-gradient(ellipse at 20% 20%, rgba(240,192,64,0.07) 0%, transparent 65%);
+    }
+    .card-dem::before {
+      background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%);
+    }
+    /* card 5 — future slot */
+    .card-c5::before {
+      background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.05) 0%, transparent 65%);
+    }
+    /* card 6 — amber/gold for Asset Allocation */
+    .card-aam::before {
+      background: radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.10) 0%, transparent 65%);
+    }
 
     .card:hover {
       transform: translateY(-4px);
@@ -238,19 +255,26 @@
 
     .card-rsl:hover { border-color: rgba(0,229,160,0.4); }
     .card-hlr:hover { border-color: rgba(0,153,255,0.4); }
-    .card-cmo:hover { border-color: rgba(240,192,64,0.4); }
-    .card-dmo:hover { border-color: rgba(255,136,68,0.4); }
-    .card-idx:hover { border-color: rgba(160,100,255,0.4); }
+    .card-scm:hover { border-color: rgba(240,192,64,0.4); }
+    .card-dem:hover { border-color: rgba(0,153,255,0.4); }
+    .card-c5:hover  { border-color: rgba(0,229,160,0.3); }
+    .card-aam:hover { border-color: rgba(200,146,42,0.5); }
 
     .card:hover::before { opacity: 1; }
 
     /* Top accent line */
-    .card-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
     .card-rsl .card-line { background: var(--accent); }
     .card-hlr .card-line { background: var(--accent2); }
-    .card-cmo .card-line { background: var(--gold); }
-    .card-dmo .card-line { background: #ff8844; }
-    .card-idx .card-line { background: #a064ff; }
+    .card-scm .card-line { background: var(--gold); }
+    .card-dem .card-line { background: var(--accent2); }
+    .card-c5  .card-line { background: var(--accent); }
+    .card-aam .card-line { background: linear-gradient(90deg, var(--amber), var(--amber-hi)); }
+
+    .card-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
 
     /* Corner number */
     .card-num {
@@ -281,11 +305,12 @@
       margin-bottom: 20px;
     }
 
-    .card-rsl .card-tag { color: var(--accent);  border-color: rgba(0,229,160,0.25);  background: rgba(0,229,160,0.06); }
-    .card-hlr .card-tag { color: var(--accent2); border-color: rgba(0,153,255,0.25);  background: rgba(0,153,255,0.06); }
-    .card-cmo .card-tag { color: var(--gold);    border-color: rgba(240,192,64,0.25); background: rgba(240,192,64,0.06); }
-    .card-dmo .card-tag { color: #ff8844;        border-color: rgba(255,136,68,0.25); background: rgba(255,136,68,0.06); }
-    .card-idx .card-tag { color: #a064ff;        border-color: rgba(160,100,255,0.25);background: rgba(160,100,255,0.06); }
+    .card-rsl .card-tag { color: var(--accent);    border-color: rgba(0,229,160,0.25);   background: rgba(0,229,160,0.06); }
+    .card-hlr .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
+    .card-scm .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.25);  background: rgba(240,192,64,0.06); }
+    .card-dem .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
+    .card-c5  .card-tag { color: var(--accent);    border-color: rgba(0,229,160,0.20);   background: rgba(0,229,160,0.05); }
+    .card-aam .card-tag { color: var(--amber-hi);  border-color: rgba(200,146,42,0.35);  background: rgba(200,146,42,0.08); }
 
     /* Title */
     .card-title {
@@ -300,9 +325,10 @@
 
     .card-rsl .card-title em { font-style: normal; color: var(--accent); }
     .card-hlr .card-title em { font-style: normal; color: var(--accent2); }
-    .card-cmo .card-title em { font-style: normal; color: var(--gold); }
-    .card-dmo .card-title em { font-style: normal; color: #ff8844; }
-    .card-idx .card-title em { font-style: normal; color: #a064ff; }
+    .card-scm .card-title em { font-style: normal; color: var(--gold); }
+    .card-dem .card-title em { font-style: normal; color: var(--accent2); }
+    .card-c5  .card-title em { font-style: normal; color: var(--accent); }
+    .card-aam .card-title em { font-style: normal; color: var(--amber-hi); }
 
     /* Description */
     .card-desc {
@@ -351,15 +377,19 @@
       z-index: 1;
     }
 
-    .card-rsl .card-cta { background: var(--accent);  border-color: var(--accent); }
-    .card-hlr .card-cta { background: var(--accent2); border-color: var(--accent2); }
-    .card-cmo .card-cta { background: var(--gold);    border-color: var(--gold); }
-    .card-dmo .card-cta { background: #ff8844;        border-color: #ff8844; }
-    .card-idx .card-cta { background: #a064ff;        border-color: #a064ff; }
+    .card-rsl .card-cta { background: var(--accent);   border-color: var(--accent); }
+    .card-hlr .card-cta { background: var(--accent2);  border-color: var(--accent2); }
+    .card-scm .card-cta { background: var(--gold);     border-color: var(--gold); }
+    .card-dem .card-cta { background: var(--accent2);  border-color: var(--accent2); }
+    .card-c5  .card-cta { background: var(--accent);   border-color: var(--accent); }
+    .card-aam .card-cta { background: var(--amber-hi); border-color: var(--amber-hi); }
 
     .card:hover .card-cta { opacity: 0.9; }
 
-    .arrow { font-size: 14px; transition: transform 0.2s; }
+    .arrow {
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
     .card:hover .arrow { transform: translateX(5px); }
 
     /* ── Divider ── */
@@ -469,8 +499,9 @@
   <!-- INTRO -->
   <div class="intro">
     <p>
-      Five <strong>data-driven, rules-based strategies</strong> across the Swedish and German stock markets —
-      each fully automated and updated every Friday evening after market close.
+      Six <strong>data-driven, rules-based strategies</strong> across the Swedish and German stock markets,
+      plus a global asset allocation momentum screener —
+      each fully automated and updated on a regular schedule.
       No opinions. No noise. Just systematic signals.
     </p>
   </div>
@@ -519,7 +550,7 @@
     </a>
 
     <!-- Card 3: Swedish Compound Momentum -->
-    <a href="https://alex30free.github.io/swedish-compound-momentum/" class="card card-cmo">
+    <a href="https://alex30free.github.io/swedish-compound-momentum/" class="card card-scm">
       <div class="card-line"></div>
       <div class="card-num">03</div>
       <div class="card-tag">Compound Momentum · Sweden</div>
@@ -539,7 +570,7 @@
     </a>
 
     <!-- Card 4: German Momentum -->
-    <a href="https://alex30free.github.io/german-momentum-screener/" class="card card-dmo">
+    <a href="https://alex30free.github.io/german-momentum-screener/" class="card card-dem">
       <div class="card-line"></div>
       <div class="card-num">04</div>
       <div class="card-tag">Compound Momentum · Germany</div>
@@ -558,20 +589,25 @@
       </div>
     </a>
 
-    <!-- Card 5: Global Index RSL -->
-    <a href="https://alex30free.github.io/swedish-rsl-screener/index-screener.html" class="card card-idx">
+    <!-- Card 5: placeholder / future slot — kept for symmetry, hidden until used -->
+    <!-- If you have a 5th screener, replace this card -->
+    <!-- <a href="#" class="card card-c5"> ... </a> -->
+
+    <!-- Card 6: Asset Allocation Momentum — spans full width if 5 cards total, else sits in grid -->
+    <a href="https://alex30free.github.io/asset-momentum-screener/" class="card card-aam" style="grid-column: 1 / -1;">
       <div class="card-line"></div>
       <div class="card-num">05</div>
-      <div class="card-tag">Market Climate · Global</div>
-      <div class="card-title">Global Index<br><em>RSL</em></div>
+      <div class="card-tag">Asset Allocation · Global</div>
+      <div class="card-title">Asset Class<br><em>Momentum</em></div>
       <div class="card-desc">
-        Tracks RSL momentum across 23 global indices spanning Sweden, Nordic, Europe, US and Asia-Pacific. Includes a live market climate chart and phase detection.
+        Nine global asset classes — USA, Europe, Japan, Emerging Markets, Sweden, Swedish small caps, bonds, short-term rates and gold — ranked by composite 3M/6M/12M momentum. Top 3 highlighted as current allocation targets. Updated monthly on the 20th.
       </div>
       <div class="card-stats">
-        <span class="card-stat">23 indices</span>
-        <span class="card-stat">5 regions</span>
-        <span class="card-stat">Live data</span>
-        <span class="card-stat">RSL · SMA-130</span>
+        <span class="card-stat">3m · 6m · 12m avg.</span>
+        <span class="card-stat">9 asset classes</span>
+        <span class="card-stat">Top 3 picks</span>
+        <span class="card-stat">Monthly · 20th</span>
+        <span class="card-stat">Global</span>
       </div>
       <div class="card-cta">
         Open Screener <span class="arrow">→</span>
@@ -590,7 +626,7 @@
     </div>
     <div class="about-item">
       <div class="about-label">Update Schedule</div>
-      <div class="about-val">Every Friday<br>~18:30 CET</div>
+      <div class="about-val">Every Friday · ~18:30 CET<br>Asset Alloc · 20th monthly</div>
     </div>
     <div class="about-item">
       <div class="about-label">Methodology</div>
@@ -610,7 +646,7 @@
       &nbsp;·&nbsp;
       <a href="https://alex30free.github.io/german-momentum-screener/">DE Momentum</a>
       &nbsp;·&nbsp;
-      <a href="https://alex30free.github.io/swedish-rsl-screener/index-screener.html">Global Index</a>
+      <a href="https://alex30free.github.io/asset-momentum-screener/">Asset Alloc</a>
     </span>
   </footer>
 
