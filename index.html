@@ -23,6 +23,8 @@
       --gold:      #f0c040;
       --amber:     #c8922a;
       --amber-hi:  #f0b84a;
+      --purple:    #cc44ff;
+      --teal:      #00c8d4;
       --white:     #f0f4f8;
     }
 
@@ -66,7 +68,6 @@
       z-index: 0;
     }
 
-    /* ── Ambient glow spots ── */
     .glow-left {
       position: fixed;
       top: -120px; left: -120px;
@@ -82,7 +83,6 @@
       pointer-events: none; z-index: 0;
     }
 
-    /* ── Layout ── */
     .page {
       position: relative;
       z-index: 1;
@@ -111,11 +111,7 @@
       flex-wrap: wrap;
     }
 
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .brand { display: flex; flex-direction: column; gap: 10px; }
 
     .brand-tag {
       font-family: 'IBM Plex Mono', monospace;
@@ -139,11 +135,7 @@
       line-height: 1.0;
       letter-spacing: -0.03em;
     }
-
-    h1 em {
-      font-style: normal;
-      color: var(--accent);
-    }
+    h1 em { font-style: normal; color: var(--accent); }
 
     .brand-sub {
       font-family: 'IBM Plex Mono', monospace;
@@ -177,7 +169,6 @@
       animation: fadeDown 0.7s 0.1s ease both;
       max-width: 600px;
     }
-
     .intro p {
       font-size: 14px;
       line-height: 1.75;
@@ -185,13 +176,9 @@
       font-family: 'IBM Plex Mono', monospace;
       font-weight: 300;
     }
+    .intro p strong { color: var(--text); font-weight: 400; }
 
-    .intro p strong {
-      color: var(--text);
-      font-weight: 400;
-    }
-
-    /* ── Strategy Cards Grid ── */
+    /* ── Cards Grid ── */
     .cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -220,82 +207,59 @@
 
     .card::before {
       content: '';
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
     }
 
-    .card-rsl::before {
-      background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%);
-    }
-    .card-hlr::before {
-      background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%);
-    }
-    .card-scm::before {
-      background: radial-gradient(ellipse at 20% 20%, rgba(240,192,64,0.07) 0%, transparent 65%);
-    }
-    .card-dem::before {
-      background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%);
-    }
-    /* card 5 — future slot */
-    .card-c5::before {
-      background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.05) 0%, transparent 65%);
-    }
-    /* card 6 — amber/gold for Asset Allocation */
-    .card-aam::before {
-      background: radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.10) 0%, transparent 65%);
-    }
+    /* Glow per card */
+    .card-rsl::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%); }
+    .card-hlr::before { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
+    .card-scm::before { background: radial-gradient(ellipse at 20% 20%, rgba(240,192,64,0.07) 0%, transparent 65%); }
+    .card-dem::before { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
+    .card-aam::before { background: radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.10) 0%, transparent 65%); }
+    .card-qvm::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,200,212,0.08) 0%, transparent 65%); }
+    .card-eco::before { background: radial-gradient(ellipse at 80% 20%, rgba(204,68,255,0.07) 0%, transparent 65%); }
+    .card-gem::before { background: radial-gradient(ellipse at 20% 80%, rgba(240,192,64,0.08) 0%, transparent 65%); }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .card:hover::before { opacity: 1; }
 
     .card-rsl:hover { border-color: rgba(0,229,160,0.4); }
     .card-hlr:hover { border-color: rgba(0,153,255,0.4); }
     .card-scm:hover { border-color: rgba(240,192,64,0.4); }
     .card-dem:hover { border-color: rgba(0,153,255,0.4); }
-    .card-c5:hover  { border-color: rgba(0,229,160,0.3); }
     .card-aam:hover { border-color: rgba(200,146,42,0.5); }
-
-    .card:hover::before { opacity: 1; }
+    .card-qvm:hover { border-color: rgba(0,200,212,0.45); }
+    .card-eco:hover { border-color: rgba(204,68,255,0.4); }
+    .card-gem:hover { border-color: rgba(240,192,64,0.4); }
 
     /* Top accent line */
+    .card-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
     .card-rsl .card-line { background: var(--accent); }
     .card-hlr .card-line { background: var(--accent2); }
     .card-scm .card-line { background: var(--gold); }
     .card-dem .card-line { background: var(--accent2); }
-    .card-c5  .card-line { background: var(--accent); }
     .card-aam .card-line { background: linear-gradient(90deg, var(--amber), var(--amber-hi)); }
-
-    .card-line {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-    }
+    .card-qvm .card-line { background: var(--teal); }
+    .card-eco .card-line { background: var(--purple); }
+    .card-gem .card-line { background: linear-gradient(90deg, var(--gold), var(--amber-hi)); }
 
     /* Corner number */
     .card-num {
-      position: absolute;
-      top: 28px; right: 28px;
+      position: absolute; top: 28px; right: 28px;
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 56px;
-      font-weight: 600;
-      line-height: 1;
-      letter-spacing: -0.04em;
-      opacity: 0.04;
-      color: var(--white);
-      pointer-events: none;
-      user-select: none;
+      font-size: 56px; font-weight: 600;
+      line-height: 1; letter-spacing: -0.04em;
+      opacity: 0.04; color: var(--white);
+      pointer-events: none; user-select: none;
     }
 
     /* Tag */
     .card-tag {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      font-weight: 500;
+      font-size: 10px; font-weight: 500;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       padding: 4px 10px;
@@ -309,8 +273,10 @@
     .card-hlr .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
     .card-scm .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.25);  background: rgba(240,192,64,0.06); }
     .card-dem .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
-    .card-c5  .card-tag { color: var(--accent);    border-color: rgba(0,229,160,0.20);   background: rgba(0,229,160,0.05); }
     .card-aam .card-tag { color: var(--amber-hi);  border-color: rgba(200,146,42,0.35);  background: rgba(200,146,42,0.08); }
+    .card-qvm .card-tag { color: var(--teal);      border-color: rgba(0,200,212,0.30);   background: rgba(0,200,212,0.07); }
+    .card-eco .card-tag { color: var(--purple);    border-color: rgba(204,68,255,0.28);  background: rgba(204,68,255,0.07); }
+    .card-gem .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.28);  background: rgba(240,192,64,0.06); }
 
     /* Title */
     .card-title {
@@ -327,14 +293,15 @@
     .card-hlr .card-title em { font-style: normal; color: var(--accent2); }
     .card-scm .card-title em { font-style: normal; color: var(--gold); }
     .card-dem .card-title em { font-style: normal; color: var(--accent2); }
-    .card-c5  .card-title em { font-style: normal; color: var(--accent); }
     .card-aam .card-title em { font-style: normal; color: var(--amber-hi); }
+    .card-qvm .card-title em { font-style: normal; color: var(--teal); }
+    .card-eco .card-title em { font-style: normal; color: var(--purple); }
+    .card-gem .card-title em { font-style: normal; color: var(--gold); }
 
     /* Description */
     .card-desc {
       font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 300;
+      font-size: 13px; font-weight: 300;
       color: var(--muted2);
       line-height: 1.7;
       flex: 1;
@@ -343,53 +310,46 @@
 
     /* Stat pills */
     .card-stats {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: flex; gap: 8px; flex-wrap: wrap;
       margin-bottom: 28px;
     }
-
     .card-stat {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      padding: 4px 10px;
+      font-size: 10px; padding: 4px 10px;
       border: 1px solid var(--border2);
       color: var(--muted2);
       background: rgba(255,255,255,0.02);
       white-space: nowrap;
     }
 
-    /* CTA Button */
+    /* CTA */
     .card-cta {
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
+      font-size: 11px; font-weight: 500;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       padding: 12px 18px;
       border: 1px solid;
       color: var(--bg);
-      transition: opacity 0.2s, transform 0.2s;
-      position: relative;
-      z-index: 1;
+      transition: opacity 0.2s;
+      position: relative; z-index: 1;
     }
 
     .card-rsl .card-cta { background: var(--accent);   border-color: var(--accent); }
     .card-hlr .card-cta { background: var(--accent2);  border-color: var(--accent2); }
     .card-scm .card-cta { background: var(--gold);     border-color: var(--gold); }
     .card-dem .card-cta { background: var(--accent2);  border-color: var(--accent2); }
-    .card-c5  .card-cta { background: var(--accent);   border-color: var(--accent); }
     .card-aam .card-cta { background: var(--amber-hi); border-color: var(--amber-hi); }
+    .card-qvm .card-cta { background: var(--teal);     border-color: var(--teal); }
+    .card-eco .card-cta { background: var(--purple);   border-color: var(--purple); }
+    .card-gem .card-cta { background: var(--gold);     border-color: var(--gold); }
 
     .card:hover .card-cta { opacity: 0.9; }
 
-    .arrow {
-      font-size: 14px;
-      transition: transform 0.2s;
-    }
+    .arrow { font-size: 14px; transition: transform 0.2s; }
     .card:hover .arrow { transform: translateX(5px); }
 
     /* ── Divider ── */
@@ -409,29 +369,18 @@
       border: 1px solid var(--border);
       animation: fadeUp 0.7s 0.4s ease both;
     }
+    @media (max-width: 600px) { .about { grid-template-columns: 1fr; } }
 
-    @media (max-width: 600px) {
-      .about { grid-template-columns: 1fr; }
-    }
-
-    .about-item {
-      background: var(--surface);
-      padding: 24px 26px;
-    }
-
+    .about-item { background: var(--surface); padding: 24px 26px; }
     .about-label {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.2em;
+      font-size: 10px; letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
+      color: var(--muted); margin-bottom: 6px;
     }
-
     .about-val {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
-      color: var(--text);
+      font-size: 13px; color: var(--text);
       line-height: 1.5;
     }
 
@@ -450,12 +399,7 @@
       color: var(--muted);
       animation: fadeDown 0.7s 0.5s ease both;
     }
-
-    footer a {
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
     footer a:hover { color: var(--accent); }
 
     /* ── Animations ── */
@@ -491,7 +435,7 @@
       <div class="header-right">
         <div><span class="live-dot"></span>Auto-updated weekly</div>
         <div>Nasdaq Stockholm · Xetra Frankfurt</div>
-        <div>Data source: Yahoo Finance</div>
+        <div>Data source: Yahoo Finance · Börsdata</div>
       </div>
     </div>
   </header>
@@ -499,8 +443,8 @@
   <!-- INTRO -->
   <div class="intro">
     <p>
-      Six <strong>data-driven, rules-based strategies</strong> across the Swedish and German stock markets,
-      plus a global asset allocation momentum screener —
+      Eight <strong>data-driven, rules-based strategies</strong> across Nordic and German markets,
+      plus macro cycle analysis and global asset allocation —
       each fully automated and updated on a regular schedule.
       No opinions. No noise. Just systematic signals.
     </p>
@@ -509,7 +453,7 @@
   <!-- STRATEGY CARDS -->
   <div class="cards">
 
-    <!-- Card 1: RSL -->
+    <!-- 01: RSL -->
     <a href="https://alex30free.github.io/swedish-rsl-screener/" class="card card-rsl">
       <div class="card-line"></div>
       <div class="card-num">01</div>
@@ -524,12 +468,10 @@
         <span class="card-stat">~370 stocks</span>
         <span class="card-stat">SEK</span>
       </div>
-      <div class="card-cta">
-        Open Screener <span class="arrow">→</span>
-      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
     </a>
 
-    <!-- Card 2: High-Return Low-Risk -->
+    <!-- 02: High-Return Low-Risk -->
     <a href="https://alex30free.github.io/swedish-stock-screener/" class="card card-hlr">
       <div class="card-line"></div>
       <div class="card-num">02</div>
@@ -544,12 +486,10 @@
         <span class="card-stat">~370 stocks</span>
         <span class="card-stat">SEK</span>
       </div>
-      <div class="card-cta">
-        Open Screener <span class="arrow">→</span>
-      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
     </a>
 
-    <!-- Card 3: Swedish Compound Momentum -->
+    <!-- 03: Swedish Compound Momentum -->
     <a href="https://alex30free.github.io/swedish-compound-momentum/" class="card card-scm">
       <div class="card-line"></div>
       <div class="card-num">03</div>
@@ -564,12 +504,10 @@
         <span class="card-stat">Top 20</span>
         <span class="card-stat">SEK</span>
       </div>
-      <div class="card-cta">
-        Open Screener <span class="arrow">→</span>
-      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
     </a>
 
-    <!-- Card 4: German Momentum -->
+    <!-- 04: German Momentum -->
     <a href="https://alex30free.github.io/german-momentum-screener/" class="card card-dem">
       <div class="card-line"></div>
       <div class="card-num">04</div>
@@ -584,16 +522,10 @@
         <span class="card-stat">Top 20 + history</span>
         <span class="card-stat">EUR</span>
       </div>
-      <div class="card-cta">
-        Open Screener <span class="arrow">→</span>
-      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
     </a>
 
-    <!-- Card 5: placeholder / future slot — kept for symmetry, hidden until used -->
-    <!-- If you have a 5th screener, replace this card -->
-    <!-- <a href="#" class="card card-c5"> ... </a> -->
-
-    <!-- Card 6: Asset Allocation Momentum — spans full width if 5 cards total, else sits in grid -->
+    <!-- 05: Asset Allocation Momentum — full width -->
     <a href="https://alex30free.github.io/asset-momentum-screener/" class="card card-aam" style="grid-column: 1 / -1;">
       <div class="card-line"></div>
       <div class="card-num">05</div>
@@ -609,9 +541,64 @@
         <span class="card-stat">Monthly · 20th</span>
         <span class="card-stat">Global</span>
       </div>
-      <div class="card-cta">
-        Open Screener <span class="arrow">→</span>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 06: QVMRank -->
+    <a href="https://alex30free.github.io/stock-ranking/" class="card card-qvm">
+      <div class="card-line"></div>
+      <div class="card-num">06</div>
+      <div class="card-tag">QVM Ranking · Nordic</div>
+      <div class="card-title">Nordic Stock<br><em>Rank</em></div>
+      <div class="card-desc">
+        Stockopedia-style Quality · Value · Momentum ranking across 1,500+ Nordic stocks. Each stock scored 0–100 on all three pillars and combined into a single StockRank™. Eight style archetypes from Super Stock to Sucker Stock. Auto-updated weekly from Börsdata.
       </div>
+      <div class="card-stats">
+        <span class="card-stat">QVM · StockRank™</span>
+        <span class="card-stat">8 archetypes</span>
+        <span class="card-stat">1,500+ stocks</span>
+        <span class="card-stat">SE · NO · DK · FI</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 07: Economic Cycle Navigator -->
+    <a href="https://alex30free.github.io/Dalio/" class="card card-eco">
+      <div class="card-line"></div>
+      <div class="card-num">07</div>
+      <div class="card-tag">Macro Framework · Global</div>
+      <div class="card-title">Economic Cycle<br><em>Navigator</em></div>
+      <div class="card-desc">
+        A complete macro dashboard built on Ray Dalio's debt cycle framework and Howard Marks's market cycle thinking. Tracks 16 KPIs across credit, inflation, labour and sentiment — pinpoints the cycle phase and maps the implied asset allocation.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">Dalio · Marks</span>
+        <span class="card-stat">16 KPIs</span>
+        <span class="card-stat">FRED data</span>
+        <span class="card-stat">4 cycle phases</span>
+        <span class="card-stat">Monthly</span>
+      </div>
+      <div class="card-cta">Open Dashboard <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 08: Gary Antonacci GEM — full width -->
+    <a href="https://alex30free.github.io/Gary/" class="card card-gem" style="grid-column: 1 / -1;">
+      <div class="card-line"></div>
+      <div class="card-num">08</div>
+      <div class="card-tag">Dual Momentum · Global ETFs</div>
+      <div class="card-title">Gary Antonacci<br><em>GEM</em></div>
+      <div class="card-desc">
+        Complete guide to Gary Antonacci's Global Equity Momentum strategy — both the classic three-ETF model (16.2% CAGR since 1971, &lt;20% max drawdown) and his personal advanced barbell portfolio combining equities, fixed income momentum and selective 2× NASDAQ exposure.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">Dual Momentum</span>
+        <span class="card-stat">SPY · EFA · AGG</span>
+        <span class="card-stat">Monthly signal</span>
+        <span class="card-stat">16.2% CAGR</span>
+        <span class="card-stat">~1–2 trades/yr</span>
+        <span class="card-stat">Global</span>
+      </div>
+      <div class="card-cta">Open Guide <span class="arrow">→</span></div>
     </a>
 
   </div>
@@ -622,11 +609,11 @@
   <div class="about">
     <div class="about-item">
       <div class="about-label">Markets</div>
-      <div class="about-val">Nasdaq Stockholm<br>Xetra Frankfurt</div>
+      <div class="about-val">Nasdaq Stockholm · Xetra Frankfurt<br>Nordic · Global ETFs</div>
     </div>
     <div class="about-item">
       <div class="about-label">Update Schedule</div>
-      <div class="about-val">Every Friday · ~18:30 CET<br>Asset Alloc · 20th monthly</div>
+      <div class="about-val">Every Friday · ~18:30 CET<br>Asset Alloc &amp; Macro · monthly</div>
     </div>
     <div class="about-item">
       <div class="about-label">Methodology</div>
@@ -647,6 +634,12 @@
       <a href="https://alex30free.github.io/german-momentum-screener/">DE Momentum</a>
       &nbsp;·&nbsp;
       <a href="https://alex30free.github.io/asset-momentum-screener/">Asset Alloc</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/stock-ranking/">QVMRank</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/Dalio/">Cycle Navigator</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/Gary/">Gary GEM</a>
     </span>
   </footer>
 
