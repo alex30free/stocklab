@@ -3,803 +3,677 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investment Company Discount Tracker — StockLab</title>
+  <title>Alex — StockLab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --bg: #080c10; --surface: #0d1318; --surface2: #111820;
-      --border: #1c2830; --border2: #253340;
-      --text: #c8d8e8; --muted: #4a6070; --muted2: #6a8090; --white: #f0f4f8;
-      --accent: #00e5a0; --accent2: #0099ff; --coral: #ff7a59;
-      --buy: #00e5a0; --sell: #ff5c6c; --line: #0099ff; --avg: #f0c040; --disc-tint: rgba(0,229,160,0.07); --band: #2a3b4a; --ref: #6a8090;
+      --bg:        #080c10;
+      --surface:   #0d1318;
+      --surface2:  #111820;
+      --border:    #1c2830;
+      --border2:   #253340;
+      --text:      #c8d8e8;
+      --muted:     #4a6070;
+      --muted2:    #6a8090;
+      --accent:    #00e5a0;
+      --accent2:   #0099ff;
+      --gold:      #f0c040;
+      --amber:     #c8922a;
+      --amber-hi:  #f0b84a;
+      --purple:    #cc44ff;
+      --teal:      #00c8d4;
+      --white:     #f0f4f8;
+      --coral:     #ff7a59;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
-    a { color: var(--accent2); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 48px; display: flex; flex-direction: column; gap: 24px; }
-    .mono { font-family: 'IBM Plex Mono', monospace; }
-    .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted2); border-bottom: 1px solid var(--border); padding-bottom: 14px; }
-    .top .tag { color: var(--coral); letter-spacing: .12em; text-transform: uppercase; }
-    h1 { font-family: 'IBM Plex Mono', monospace; font-weight: 500; color: var(--white); font-size: clamp(26px, 4vw, 40px); line-height: 1.15; letter-spacing: -.01em; }
-    h1 em { font-style: normal; color: var(--coral); }
-    .lede { color: var(--muted2); max-width: 780px; margin-top: 10px; line-height: 1.6; }
-    .lede strong, .note strong { color: var(--text); font-weight: 400; }
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-    .kpi { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 14px 16px; }
-    .kpi-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); }
-    .kpi-val { font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: var(--white); margin-top: 6px; }
-    .kpi-sub { font-size: 12px; color: var(--muted2); margin-top: 4px; }
-    .card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 20px; }
-    .card h2 { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 16px; color: var(--white); }
-    .note { color: var(--muted2); font-size: 13px; line-height: 1.55; margin-top: 6px; max-width: 820px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
-    select { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); border-radius: 4px; padding: 7px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 12px; color: var(--muted2); }
-    .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
-    .sw-band { border-radius: 2px; background: var(--band); }
-    .sw-ring { border: 1.5px solid var(--muted2); }
-    .chart { position: relative; margin-top: 14px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; margin-top: 14px; }
-    .mini { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 10px; cursor: pointer; text-align: left; color: inherit; font: inherit; width: 100%; }
-    .mini:hover, .mini[aria-pressed="true"] { border-color: var(--muted2); }
-    .mini-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
-    .mini-name { color: var(--white); font-weight: 400; }
-    .mini-val { font-family: 'IBM Plex Mono', monospace; }
-    .tick { font-family: 'IBM Plex Mono', monospace; font-size: 11px; fill: var(--muted2); }
-    .name { font-size: 12px; fill: var(--text); }
-    .zone { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .06em; }
-    .tip { position: absolute; pointer-events: none; background: #0a1016; border: 1px solid var(--border2); border-radius: 5px; padding: 6px 9px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.45); z-index: 5; }
-    .tip .dim { color: var(--muted2); }
-    .tablewrap { overflow-x: auto; margin-top: 14px; }
-    table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
-    th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    th:first-child, td:first-child { text-align: left; }
-    th { color: var(--muted2); font-weight: 400; vertical-align: bottom; }
-    td:first-child { color: var(--white); font-family: 'IBM Plex Sans', sans-serif; }
-    .buy { color: var(--buy); }
-    .sell { color: var(--sell); }
-    details { color: var(--muted2); font-size: 13px; line-height: 1.6; }
-    details summary { cursor: pointer; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
-    details dt { color: var(--text); margin-top: 10px; }
-    footer { border-top: 1px solid var(--border); padding-top: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .learn { padding: 0; }
-    .learn > summary { list-style: none; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--white); }
-    .learn > summary::-webkit-details-marker { display: none; }
-    .learn > summary .hint { font-size: 12px; color: var(--coral); white-space: nowrap; }
-    .learn[open] > summary .hint::after { content: ' ▲'; }
-    .learn:not([open]) > summary .hint::after { content: ' ▼'; }
-    .learn-body { padding: 0 20px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px 28px; }
-    .step { font-size: 14px; line-height: 1.65; color: var(--text); }
-    .step h3 { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 13px; color: var(--coral); letter-spacing: .04em; margin-bottom: 4px; }
-    .step p + p { margin-top: 6px; }
-    .step b { color: var(--white); font-weight: 400; }
-    .step code { font-family: 'IBM Plex Mono', monospace; color: var(--white); background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 12px; }
-    .example { grid-column: 1 / -1; background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 16px; }
-    .example .step h3 { color: var(--avg); }
-    .ex-scale { margin-top: 10px; }
-    .rules { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; }
-    .rule { border: 1px solid var(--border2); border-radius: 5px; padding: 12px; font-size: 13px; line-height: 1.55; }
-    .rule .t { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .06em; margin-bottom: 4px; }
-    .readme { margin-top: 10px; font-size: 13px; color: var(--muted2); }
-    .readme summary { font-family: 'IBM Plex Mono', monospace; color: var(--accent2); cursor: pointer; font-size: 12px; }
-    .readme ul { margin: 8px 0 0 18px; line-height: 1.6; max-width: 900px; }
-    .readme li { margin-top: 4px; }
-    .readme b { color: var(--text); font-weight: 400; }
-    .err { color: var(--sell); font-family: 'IBM Plex Mono', monospace; }
-    .seg { display: inline-flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-    .seg button { background: var(--surface2); color: var(--muted2); border: 0; padding: 7px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; cursor: pointer; }
-    .seg button + button { border-left: 1px solid var(--border2); }
-    .seg button[aria-pressed="true"] { background: var(--border2); color: var(--white); }
-    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .stats { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
-    .stats .lbl { color: var(--muted2); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 2px; }
-    .stats .val { color: var(--white); }
-    .detail-grid { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-    .detail-main { flex: 1 1 520px; min-width: 0; }
-    .side { flex: 0 1 290px; width: 290px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
-    .hold { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 14px; }
-    .trend-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
-    .trend-stats .lbl { display: block; color: var(--muted2); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
-    .trend-stats .val { color: var(--white); }
-    .trend-badge { display: inline-block; margin-top: 10px; padding: 3px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .06em; }
-    .trend-chart { margin-top: 8px; }
-    .trend-more { display: inline-block; margin-top: 6px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; }
-    .hold-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); }
-    .hold-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .hold-row { margin-top: 10px; }
-    .hold-lab { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
-    .hold-lab span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .hold-lab span:last-child { font-family: 'IBM Plex Mono', monospace; color: var(--white); }
-    .hold-bar { height: 5px; background: var(--border); border-radius: 3px; margin-top: 4px; overflow: hidden; }
-    .hold-bar i { display: block; height: 100%; border-radius: 3px; background: var(--line); }
-    .hold-bar i.unl { background: var(--coral); }
-    .hold-bar i.csh { background: var(--muted2); }
-    .hold-sep { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 2px; }
-    .hold-note { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
-    @media (max-width: 860px) { .side { width: 100%; flex-basis: 100%; } }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Scanline overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.055) 2px, rgba(0,0,0,0.055) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Grid background ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-left {
+      position: fixed;
+      top: -120px; left: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(0,229,160,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .glow-right {
+      position: fixed;
+      bottom: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,153,255,0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 28px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 56px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 64px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .brand { display: flex; flex-direction: column; gap: 10px; }
+
+    .brand-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: var(--accent);
+      text-transform: uppercase;
+      background: rgba(0,229,160,0.07);
+      border: 1px solid rgba(0,229,160,0.18);
+      padding: 4px 12px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(26px, 5vw, 44px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+
+    .brand-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted2);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.9;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2.2s ease infinite;
+    }
+
+    /* ── Intro ── */
+    .intro {
+      margin-bottom: 52px;
+      animation: fadeDown 0.7s 0.1s ease both;
+      max-width: 600px;
+    }
+    .intro p {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--muted2);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 300;
+    }
+    .intro p strong { color: var(--text); font-weight: 400; }
+
+    /* ── Cards Grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    @media (max-width: 620px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    /* ── Individual Card ── */
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      padding: 36px 32px 32px;
+      text-decoration: none;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      min-height: 340px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    /* Glow per card */
+    .card-rsl::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.07) 0%, transparent 65%); }
+    .card-hlr::before { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
+    .card-scm::before { background: radial-gradient(ellipse at 20% 20%, rgba(240,192,64,0.07) 0%, transparent 65%); }
+    .card-dem::before { background: radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.07) 0%, transparent 65%); }
+    .card-aam::before { background: radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.10) 0%, transparent 65%); }
+    .card-qvm::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,200,212,0.08) 0%, transparent 65%); }
+    .card-eco::before { background: radial-gradient(ellipse at 80% 20%, rgba(204,68,255,0.07) 0%, transparent 65%); }
+    .card-ibx::before { background: radial-gradient(ellipse at 80% 80%, rgba(255,122,89,0.08) 0%, transparent 65%); }
+    .card-gem::before { background: radial-gradient(ellipse at 20% 80%, rgba(240,192,64,0.08) 0%, transparent 65%); }
+
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .card:hover::before { opacity: 1; }
+
+    .card-rsl:hover { border-color: rgba(0,229,160,0.4); }
+    .card-hlr:hover { border-color: rgba(0,153,255,0.4); }
+    .card-scm:hover { border-color: rgba(240,192,64,0.4); }
+    .card-dem:hover { border-color: rgba(0,153,255,0.4); }
+    .card-aam:hover { border-color: rgba(200,146,42,0.5); }
+    .card-qvm:hover { border-color: rgba(0,200,212,0.45); }
+    .card-eco:hover { border-color: rgba(204,68,255,0.4); }
+    .card-ibx:hover { border-color: rgba(255,122,89,0.45); }
+    .card-gem:hover { border-color: rgba(240,192,64,0.4); }
+
+    /* Top accent line */
+    .card-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .card-rsl .card-line { background: var(--accent); }
+    .card-hlr .card-line { background: var(--accent2); }
+    .card-scm .card-line { background: var(--gold); }
+    .card-dem .card-line { background: var(--accent2); }
+    .card-aam .card-line { background: linear-gradient(90deg, var(--amber), var(--amber-hi)); }
+    .card-qvm .card-line { background: var(--teal); }
+    .card-eco .card-line { background: var(--purple); }
+    .card-ibx .card-line { background: var(--coral); }
+    .card-gem .card-line { background: linear-gradient(90deg, var(--gold), var(--amber-hi)); }
+
+    /* Corner number */
+    .card-num {
+      position: absolute; top: 28px; right: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 56px; font-weight: 600;
+      line-height: 1; letter-spacing: -0.04em;
+      opacity: 0.04; color: var(--white);
+      pointer-events: none; user-select: none;
+    }
+
+    /* Tag */
+    .card-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid;
+      display: inline-block;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+
+    .card-rsl .card-tag { color: var(--accent);    border-color: rgba(0,229,160,0.25);   background: rgba(0,229,160,0.06); }
+    .card-hlr .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
+    .card-scm .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.25);  background: rgba(240,192,64,0.06); }
+    .card-dem .card-tag { color: var(--accent2);   border-color: rgba(0,153,255,0.25);   background: rgba(0,153,255,0.06); }
+    .card-aam .card-tag { color: var(--amber-hi);  border-color: rgba(200,146,42,0.35);  background: rgba(200,146,42,0.08); }
+    .card-qvm .card-tag { color: var(--teal);      border-color: rgba(0,200,212,0.30);   background: rgba(0,200,212,0.07); }
+    .card-eco .card-tag { color: var(--purple);    border-color: rgba(204,68,255,0.28);  background: rgba(204,68,255,0.07); }
+    .card-ibx .card-tag { color: var(--coral);     border-color: rgba(255,122,89,0.30);  background: rgba(255,122,89,0.07); }
+    .card-gem .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.28);  background: rgba(240,192,64,0.06); }
+
+    /* Title */
+    .card-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(17px, 2.5vw, 22px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .card-rsl .card-title em { font-style: normal; color: var(--accent); }
+    .card-hlr .card-title em { font-style: normal; color: var(--accent2); }
+    .card-scm .card-title em { font-style: normal; color: var(--gold); }
+    .card-dem .card-title em { font-style: normal; color: var(--accent2); }
+    .card-aam .card-title em { font-style: normal; color: var(--amber-hi); }
+    .card-qvm .card-title em { font-style: normal; color: var(--teal); }
+    .card-eco .card-title em { font-style: normal; color: var(--purple); }
+    .card-ibx .card-title em { font-style: normal; color: var(--coral); }
+    .card-gem .card-title em { font-style: normal; color: var(--gold); }
+
+    /* Description */
+    .card-desc {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px; font-weight: 300;
+      color: var(--muted2);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 28px;
+    }
+
+    /* Stat pills */
+    .card-stats {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .card-stat {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; padding: 4px 10px;
+      border: 1px solid var(--border2);
+      color: var(--muted2);
+      background: rgba(255,255,255,0.02);
+      white-space: nowrap;
+    }
+
+    /* CTA */
+    .card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 12px 18px;
+      border: 1px solid;
+      color: var(--bg);
+      transition: opacity 0.2s;
+      position: relative; z-index: 1;
+    }
+
+    .card-rsl .card-cta { background: var(--accent);   border-color: var(--accent); }
+    .card-hlr .card-cta { background: var(--accent2);  border-color: var(--accent2); }
+    .card-scm .card-cta { background: var(--gold);     border-color: var(--gold); }
+    .card-dem .card-cta { background: var(--accent2);  border-color: var(--accent2); }
+    .card-aam .card-cta { background: var(--amber-hi); border-color: var(--amber-hi); }
+    .card-qvm .card-cta { background: var(--teal);     border-color: var(--teal); }
+    .card-eco .card-cta { background: var(--purple);   border-color: var(--purple); }
+    .card-gem .card-cta { background: var(--gold);     border-color: var(--gold); }
+    .card-ibx .card-cta { background: var(--coral);    border-color: var(--coral); }
+
+    .card:hover .card-cta { opacity: 0.9; }
+
+    .arrow { font-size: 14px; transition: transform 0.2s; }
+    .card:hover .arrow { transform: translateX(5px); }
+
+    /* ── Divider ── */
+    .divider {
+      margin: 72px 0 40px;
+      border: none;
+      border-top: 1px solid var(--border);
+      animation: fadeDown 0.7s 0.35s ease both;
+    }
+
+    /* ── About strip ── */
+    .about {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    @media (max-width: 600px) { .about { grid-template-columns: 1fr; } }
+
+    .about-item { background: var(--surface); padding: 24px 26px; }
+    .about-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .about-val {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      animation: fadeDown 0.7s 0.5s ease both;
+    }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--accent); }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
+      50%      { box-shadow: 0 0 0 5px rgba(0,229,160,0); }
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="top">
-    <a href="https://alex30free.github.io/stocklab/">← StockLab</a>
-    <span class="tag">Discount Tracker · Sweden</span>
-    <span id="updated">Loading…</span>
-  </div>
+<div class="glow-left"></div>
+<div class="glow-right"></div>
 
+<div class="page">
+
+  <!-- HEADER -->
   <header>
-    <h1>Investment Company<br><em>Discount Tracker</em></h1>
-    <p class="lede">Discount or premium to net asset value for the Swedish investment companies tracked by ibindex.se, compared with each company's own history.
-      Each company's <strong>normal level</strong> is its 7-year average.
-      <strong>Buy zone</strong>: today's discount is at least 1 standard deviation wider than that normal level.
-      <strong>Sell zone</strong>: at least 1 standard deviation narrower. Updated automatically every Friday.</p>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-tag">Equity Research Lab</div>
+        <h1>Stock<em>Lab</em></h1>
+        <div class="brand-sub">Systematic strategies · Swedish &amp; German markets</div>
+      </div>
+      <div class="header-right">
+        <div><span class="live-dot"></span>Auto-updated weekly</div>
+        <div>Nasdaq Stockholm · Xetra Frankfurt</div>
+        <div>Data source: Yahoo Finance · Börsdata</div>
+      </div>
+    </div>
   </header>
 
-  <div class="kpis">
-    <div class="kpi"><div class="kpi-label">In buy zone</div><div class="kpi-val buy" id="k-buy">–</div><div class="kpi-sub" id="k-buy-names"></div></div>
-    <div class="kpi"><div class="kpi-label">In sell zone</div><div class="kpi-val sell" id="k-sell">–</div><div class="kpi-sub" id="k-sell-names"></div></div>
-    <div class="kpi"><div class="kpi-label">Most extreme</div><div class="kpi-val" id="k-ext">–</div><div class="kpi-sub" id="k-ext-sub"></div></div>
-    <div class="kpi"><div class="kpi-label">Data through</div><div class="kpi-val" id="k-date">–</div><div class="kpi-sub" id="k-date-sub"></div></div>
+  <!-- INTRO -->
+  <div class="intro">
+    <p>
+      Eight <strong>data-driven, rules-based strategies</strong> across Nordic and German markets,
+      plus macro cycle analysis and global asset allocation —
+      each fully automated and updated on a regular schedule.
+      No opinions. No noise. Just systematic signals.
+    </p>
   </div>
 
-  <details class="card learn" id="learn">
-    <summary><span>New here? How to read this page — discount, σ and buy/sell zones</span><span class="hint">3-minute read</span></summary>
-    <div class="learn-body">
-      <div class="step">
-        <h3>1 · What is NAV?</h3>
-        <p>An investment company (like Investor or Latour) is basically a basket of other companies. <b>NAV</b> (net asset value, <i>substansvärde</i>) is what that basket is worth per share: the value of everything it owns, minus its debt.</p>
+  <!-- STRATEGY CARDS -->
+  <div class="cards">
+
+    <!-- 01: RSL -->
+    <a href="https://alex30free.github.io/swedish-rsl-screener/" class="card card-rsl">
+      <div class="card-line"></div>
+      <div class="card-num">01</div>
+      <div class="card-tag">Momentum · Sweden</div>
+      <div class="card-title">Relative Strength<br><em>by Levy</em></div>
+      <div class="card-desc">
+        Ranks all Swedish stocks by their Levy RSL score — the ratio of current price to its 130-day moving average. The top 20 strongest momentum stocks, rebalanced weekly.
       </div>
-      <div class="step">
-        <h3>2 · Discount and premium</h3>
-        <p>The share price on the stock market is often <b>not</b> the same as NAV.</p>
-        <p><b>Discount</b>: price is <i>below</i> NAV. A 10% discount means you pay 90 kr for 100 kr worth of assets.<br><b>Premium</b>: price is <i>above</i> NAV. A 10% premium means you pay 110 kr for 100 kr worth of assets.</p>
+      <div class="card-stats">
+        <span class="card-stat">RSL · 130-day SMA</span>
+        <span class="card-stat">Top 20 ranked</span>
+        <span class="card-stat">~370 stocks</span>
+        <span class="card-stat">SEK</span>
       </div>
-      <div class="step">
-        <h3>3 · Every company has its own "normal"</h3>
-        <p>Some companies almost always trade at a premium (investors pay extra for a strong track record or skilled owners), others almost always at a discount (unlisted holdings, costs, a less popular strategy). So <b>a 5% premium can be expensive for one company and cheap for another</b>. That is why this page compares each company with <b>its own history</b> rather than with zero.</p>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 02: High-Return Low-Risk -->
+    <a href="https://alex30free.github.io/swedish-stock-screener/" class="card card-hlr">
+      <div class="card-line"></div>
+      <div class="card-num">02</div>
+      <div class="card-tag">Quality · Sweden</div>
+      <div class="card-title">High-Return<br><em>&amp; Low-Risk</em></div>
+      <div class="card-desc">
+        Screens for stocks that combine strong historical returns with low volatility — identifying companies with durable financial quality and resilient price behaviour.
       </div>
-      <div class="step">
-        <h3>4 · Average and σ (sigma)</h3>
-        <p>We look at the last <b>7 years</b> of daily values (or all data, if a company is younger) and calculate two things:</p>
-        <p><b>Normal level</b>: the 7-year average discount or premium. A long period covers both good and bad markets.<br><b>σ, standard deviation</b>: how much it normally swings around that average over the same 7 years. Small σ = calm and stable; large σ = it jumps around a lot.</p>
-        <p>As a rule of thumb, values stay within ±1σ of the average about <b>two-thirds of the time</b>, and beyond ±2σ only about <b>1 time in 20</b>.</p>
+      <div class="card-stats">
+        <span class="card-stat">Return / Risk ratio</span>
+        <span class="card-stat">Quality filter</span>
+        <span class="card-stat">~370 stocks</span>
+        <span class="card-stat">SEK</span>
       </div>
-      <div class="step">
-        <h3>5 · The z-score</h3>
-        <p>The z-score answers one question: <b>how many "normal swings" away from its usual level is the company today?</b></p>
-        <p><code>z = (discount today − normal level) ÷ σ</code></p>
-        <p>z = 0 means exactly normal. z = +2 means the discount is two normal swings <i>wider</i> than usual (cheaper). z = −2 means two swings <i>narrower</i> than usual, or a premium (more expensive).</p>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 03: Swedish Compound Momentum -->
+    <a href="https://alex30free.github.io/swedish-compound-momentum/" class="card card-scm">
+      <div class="card-line"></div>
+      <div class="card-num">03</div>
+      <div class="card-tag">Compound Momentum · Sweden</div>
+      <div class="card-title">Swedish Compound<br><em>Momentum</em></div>
+      <div class="card-desc">
+        Combines 12-month, 6-month and 3-month momentum into a single composite score. Only stocks trading above their 130-day moving average (RSL ≥ 1.0) are eligible.
       </div>
-      <div class="step">
-        <h3>6 · Buy zone and sell zone</h3>
-        <p><b style="color:var(--buy)">Buy zone (z ≥ +1)</b>: the discount is unusually wide, so the share is unusually cheap compared with its own history.</p>
-        <p><b style="color:var(--sell)">Sell zone (z ≤ −1)</b>: the discount is unusually narrow or there is an unusual premium, so the share is unusually expensive compared with its own history.</p>
-        <p>Between −1 and +1 is <b>neutral</b>: nothing unusual.</p>
+      <div class="card-stats">
+        <span class="card-stat">12m · 6m · 3m</span>
+        <span class="card-stat">RSL filter</span>
+        <span class="card-stat">Top 20</span>
+        <span class="card-stat">SEK</span>
       </div>
-      <div class="example">
-        <div class="step">
-          <h3>Worked example with today's data · <span id="ex-name">–</span></h3>
-          <p id="ex-text">–</p>
-        </div>
-        <div class="ex-scale" id="ex-scale"></div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 04: German Momentum -->
+    <a href="https://alex30free.github.io/german-momentum-screener/" class="card card-dem">
+      <div class="card-line"></div>
+      <div class="card-num">04</div>
+      <div class="card-tag">Compound Momentum · Germany</div>
+      <div class="card-title">German<br><em>Momentum</em></div>
+      <div class="card-desc">
+        Compound momentum across DAX, MDAX and SDAX — ~170 German stocks ranked by composite 12m/6m/3m momentum. Includes rank history charts that build over time.
       </div>
-      <div class="rules">
-        <div class="rule"><div class="t" style="color:var(--buy)">WHY IT CAN WORK</div>Discounts and premiums tend to drift back towards their normal level over time. In the backtest below, buying in the buy zone beat the average 12-month return for most companies.</div>
-        <div class="rule"><div class="t" style="color:var(--sell)">WHY IT CAN FAIL</div>"Normal" can change for good: Investor and Latour have moved from discount to premium over the years. A company can also be cheap for a reason, such as falling asset values or a weak strategy.</div>
-        <div class="rule"><div class="t" style="color:var(--avg)">HOW TO USE IT</div>Treat the zones as a starting point for your own research, not as a buy or sell button. Look at the holdings, the long-term chart and the 5/7-year average before deciding anything.</div>
+      <div class="card-stats">
+        <span class="card-stat">DAX · MDAX · SDAX</span>
+        <span class="card-stat">RSL filter</span>
+        <span class="card-stat">Top 20 + history</span>
+        <span class="card-stat">EUR</span>
       </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 05: Asset Allocation Momentum — full width -->
+    <a href="https://alex30free.github.io/asset-momentum-screener/" class="card card-aam" style="grid-column: 1 / -1;">
+      <div class="card-line"></div>
+      <div class="card-num">05</div>
+      <div class="card-tag">Asset Allocation · Global</div>
+      <div class="card-title">Asset Class<br><em>Momentum</em></div>
+      <div class="card-desc">
+        Nine global asset classes — USA, Europe, Japan, Emerging Markets, Sweden, Swedish small caps, bonds, short-term rates and gold — ranked by composite 3M/6M/12M momentum. Top 3 highlighted as current allocation targets. Updated monthly on the 20th.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">3m · 6m · 12m avg.</span>
+        <span class="card-stat">9 asset classes</span>
+        <span class="card-stat">Top 3 picks</span>
+        <span class="card-stat">Monthly · 20th</span>
+        <span class="card-stat">Global</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 06: QVMRank -->
+    <a href="https://alex30free.github.io/stock-ranking/" class="card card-qvm">
+      <div class="card-line"></div>
+      <div class="card-num">06</div>
+      <div class="card-tag">QVM Ranking · Nordic</div>
+      <div class="card-title">Nordic Stock<br><em>Rank</em></div>
+      <div class="card-desc">
+        Stockopedia-style Quality · Value · Momentum ranking across 1,500+ Nordic stocks. Each stock scored 0–100 on all three pillars and combined into a single StockRank™. Eight style archetypes from Super Stock to Sucker Stock. Auto-updated weekly from Börsdata.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">QVM · StockRank™</span>
+        <span class="card-stat">8 archetypes</span>
+        <span class="card-stat">1,500+ stocks</span>
+        <span class="card-stat">SE · NO · DK · FI</span>
+      </div>
+      <div class="card-cta">Open Screener <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 07: Economic Cycle Navigator -->
+    <a href="https://alex30free.github.io/Dalio/" class="card card-eco">
+      <div class="card-line"></div>
+      <div class="card-num">07</div>
+      <div class="card-tag">Macro Framework · Global</div>
+      <div class="card-title">Economic Cycle<br><em>Navigator</em></div>
+      <div class="card-desc">
+        A complete macro dashboard built on Ray Dalio's debt cycle framework and Howard Marks's market cycle thinking. Tracks 16 KPIs across credit, inflation, labour and sentiment — pinpoints the cycle phase and maps the implied asset allocation.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">Dalio · Marks</span>
+        <span class="card-stat">16 KPIs</span>
+        <span class="card-stat">FRED data</span>
+        <span class="card-stat">4 cycle phases</span>
+        <span class="card-stat">Monthly</span>
+      </div>
+      <div class="card-cta">Open Dashboard <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 08: Gary Antonacci GEM — full width -->
+    <a href="https://alex30free.github.io/Gary/" class="card card-gem" style="grid-column: 1 / -1;">
+      <div class="card-line"></div>
+      <div class="card-num">08</div>
+      <div class="card-tag">Dual Momentum · Global ETFs</div>
+      <div class="card-title">Gary Antonacci<br><em>GEM</em></div>
+      <div class="card-desc">
+        Complete guide to Gary Antonacci's Global Equity Momentum strategy — both the classic three-ETF model (16.2% CAGR since 1971, &lt;20% max drawdown) and his personal advanced barbell portfolio combining equities, fixed income momentum and selective 2× NASDAQ exposure.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">Dual Momentum</span>
+        <span class="card-stat">SPY · EFA · AGG</span>
+        <span class="card-stat">Monthly signal</span>
+        <span class="card-stat">16.2% CAGR</span>
+        <span class="card-stat">~1–2 trades/yr</span>
+        <span class="card-stat">Global</span>
+      </div>
+      <div class="card-cta">Open Guide <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 09: Investment company discount tracker — full width -->
+    <a href="https://alex30free.github.io/ib-discount-tracker/" class="card card-ibx" style="grid-column: 1 / -1;">
+      <div class="card-line"></div>
+      <div class="card-num">09</div>
+      <div class="card-tag">NAV Discount · Swedish Investment Companies</div>
+      <div class="card-title">Investment Company<br><em>Discount Tracker</em></div>
+      <div class="card-desc">
+        Discount or premium to net asset value for 17 Swedish investment companies tracked by ibindex — Investor, Industrivärden, Latour, Kinnevik and more — charted since 2014 against each company's own history. Flags statistical buy and sell zones (±1σ from the 7-year average) backtests how they played out, and shows each company's largest holdings and share price against its 40-week moving average.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">ibindex data</span>
+        <span class="card-stat">17 companies</span>
+        <span class="card-stat">Since 2014</span>
+        <span class="card-stat">z-score zones</span>
+        <span class="card-stat">Backtest</span>
+        <span class="card-stat">Top holdings</span>
+        <span class="card-stat">40w MA</span>
+        <span class="card-stat">Weekly</span>
+      </div>
+      <div class="card-cta">Open Tracker <span class="arrow">→</span></div>
+    </a>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ABOUT STRIP -->
+  <div class="about">
+    <div class="about-item">
+      <div class="about-label">Markets</div>
+      <div class="about-val">Nasdaq Stockholm · Xetra Frankfurt<br>Nordic · Global ETFs</div>
     </div>
-  </details>
-
-  <section class="card" id="overview">
-    <h2>Where does each company stand today?</h2>
-    <p class="note">Distance from the company's own normal level (its 7-year average), in standard deviations (z-score). On the right: current valuation and the normal level. Click a company to see its history. <a href="#learn" id="learn-link">What does this mean?</a></p>
-    <div class="legend">
-      <span><span class="sw" style="background:var(--buy)"></span>Buy zone</span>
-      <span><span class="sw" style="background:var(--sell)"></span>Sell zone</span>
+    <div class="about-item">
+      <div class="about-label">Update Schedule</div>
+      <div class="about-val">Every Friday · ~18:30 CET<br>Asset Alloc &amp; Macro · monthly</div>
     </div>
-    <div class="chart" id="c-overview"></div>
-    <p class="note" id="unrated"></p>
-    <p class="note">A z-score says how unusual today's valuation is for that particular company, not whether it is cheap in absolute terms. Investor and Latour, for example, have moved from discount to premium over the years.</p>
-  </section>
-
-  <section class="card" id="detail">
-    <div class="detail-grid">
-      <div class="detail-main">
-        <h2>Discount / premium over time</h2>
-        <p class="note">Month-end values since 2014. Premium plotted upwards, discount downwards (green area). The dashed line is the average over the chosen period, so you can see where today stands against it.</p>
-        <div class="controls" style="margin-top:12px">
-          <div class="seg" id="avg-seg" role="group" aria-label="Average period">
-            <button type="button" data-years="7" aria-pressed="true">7y avg</button>
-            <button type="button" data-years="5" aria-pressed="false">5y avg</button>
-          </div>
-          <select id="pick" aria-label="Choose company"></select>
-        </div>
-        <div class="stats" id="avg-stats"></div>
-        <div class="legend">
-          <span><span class="sw" style="background:var(--line)"></span>Discount / premium</span>
-          <span><span class="sw" style="background:var(--avg); border-radius:2px; height:3px; vertical-align:3px"></span><span id="avg-legend">7-year average</span></span>
-          <span><span class="sw" style="background:rgba(0,229,160,0.25); border-radius:2px"></span>Discount area (price below NAV)</span>
-        </div>
-        <div class="chart" id="c-detail"></div>
-      </div>
-      <div class="side">
-        <aside class="hold trend" id="c-trend" aria-label="Share price trend"></aside>
-        <aside class="hold" id="c-hold" aria-label="Largest holdings"></aside>
-      </div>
+    <div class="about-item">
+      <div class="about-label">Methodology</div>
+      <div class="about-val">Rules-based &amp; systematic.<br>No discretion, no bias.</div>
     </div>
-  </section>
+  </div>
 
-  <section class="card" id="price">
-    <div class="head">
-      <div>
-        <h2>Share price and 40-week moving average · <span id="price-name">–</span></h2>
-        <p class="note">Weekly closing price in SEK, adjusted for share splits so the history is comparable. The 40-week moving average is the average of the last 40 weekly closes (about 9 months) and shows the longer trend: price above the line means the trend is up, price below means it is down.</p>
-      </div>
-      <div class="controls">
-        <div class="seg" id="range-seg" role="group" aria-label="Period">
-          <button type="button" data-weeks="104" aria-pressed="false">2y</button>
-          <button type="button" data-weeks="260" aria-pressed="true">5y</button>
-          <button type="button" data-weeks="0" aria-pressed="false">All</button>
-        </div>
-      </div>
-    </div>
-    <div class="stats" id="price-stats"></div>
-    <div class="legend">
-      <span><span class="sw" style="background:var(--white)"></span>Weekly close</span>
-      <span><span class="sw" style="background:var(--avg); border-radius:2px; height:3px; vertical-align:3px"></span>40-week moving average</span>
-    </div>
-    <div class="chart" id="c-price"></div>
-  </section>
-
-  <section class="card">
-    <h2>All companies</h2>
-    <p class="note">Each on its own scale, since levels differ a lot between companies. Premium up, discount down (green area); dashed line is the average for the chosen period. Click to show in the chart above.</p>
-    <div class="grid" id="c-grid"></div>
-  </section>
-
-  <section class="card">
-    <h2>Today versus history</h2>
-    <p class="note">Computed on daily values. Percentile: share of days over the last five years with a smaller discount than today. ° = tracked by ibindex but not part of the ibindex index itself.</p>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Company</th><th>Today</th><th>5y average</th><th>7y average<br>(normal level)</th><th>σ 7y</th><th>z</th><th>Percentile 5y</th><th>Zone</th><th>Price vs<br>40w average</th></tr></thead>
-        <tbody id="t-now"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2>Have the signals worked?</h2>
-    <p class="note" id="bt-summary"></p>
-    <p class="note">Each trading day the company is placed in a zone using only the data available that day (its previous 7 years, or all earlier data if less; the test starts once a company has 5 years of history), then the share price change over the next 12 months (250 trading days) is measured. Price return excludes dividends but is adjusted for share splits and spin-offs. Discount change is in percentage points; negative means the discount narrowed.</p>
-    <details class="readme">
-      <summary>How to read this table</summary>
-      <ul>
-        <li><b>12m return after buy zone</b>: imagine buying the share on <i>every</i> day the company was in the buy zone and selling exactly 12 months later. This is the average share price change of all those trades. Green = better than buying on any random day (the "all days" column).</li>
-        <li><b>Share up</b>: how many of those trades ended with a higher share price after 12 months. 75% means three out of four.</li>
-        <li><b>12m return after sell zone</b>: the same, but for days in the sell zone. Red = worse than a random day, which is what you would expect if the sell signal works.</li>
-        <li><b>12m return all days</b>: the benchmark, buying on any day regardless of zone.</li>
-        <li><b>Discount change</b>: how much the discount moved during those 12 months. In the buy zone you hope for a negative number (the unusually wide discount shrinks back towards normal); in the sell zone a positive one. The discount can return to normal while the share price still falls, if the whole market and the company's holdings fall at the same time.</li>
-        <li><b>Days buy / sell</b>: how many trading days the signal was on. Few days (for example under 50) usually means a single short episode, so treat that result with extra caution.</li>
-      </ul>
-    </details>
-    <div class="tablewrap">
-      <table>
-        <thead><tr>
-          <th>Company</th><th>12m return<br>after buy zone</th><th>Share up<br>buy zone</th><th>12m return<br>after sell zone</th><th>Share up<br>sell zone</th><th>12m return<br>all days</th><th>Discount change<br>buy zone</th><th>Discount change<br>sell zone</th><th>Days<br>buy / sell</th>
-        </tr></thead>
-        <tbody id="t-bt"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <details>
-    <summary>Method and caveats</summary>
-    <dl>
-      <dt>Source</dt>
-      <dd>The price history CSV that ibindex.se offers for each company: share price, reported NAV and ibindex's calculated NAV per trading day. All investment companies ibindex tracks are included: the companies in the ibindex index, plus the others it lists (marked °). Companies with under 2 years of data are shown but not given a zone. A GitHub Action downloads the files every Friday and recomputes everything.</dd>
-      <dt>Discount</dt>
-      <dd>(NAV − price) / NAV. Positive is a discount, negative a premium. The daily calculated NAV is used where available (from November 2016, Linc from May 2021); before that the latest reported NAV.</dd>
-      <dt>z-score and zones</dt>
-      <dd>(today − 7-year average) / 7-year standard deviation, over about 1,750 trading days (all data if a company has less). Zones and tables use daily values. The average line in the charts is the simple average of month-end values over the last 5 or 7 years (or since the data starts, if shorter).</dd>
-      <dt>Holdings</dt>
-      <dd>The five largest listed holdings as a share of NAV, plus unlisted holdings as one total and cash or interest-bearing assets where significant, from ibindex's latest reported holdings (the date is shown with each company). Where ibindex files listed remainders or interest-bearing assets under unlisted, they are counted as listed and cash instead.</dd>
-      <dt>Share splits and spin-offs</dt>
-      <dd>ibindex's price history is not adjusted for share splits (for example Investor's 4:1 split in 2021) or distributions of shares to owners. When the price and NAV jump by about the same large ratio on one day, the backtest treats that day as a corporate action rather than a gain or loss.</dd>
-      <dt>Caveats</dt>
-      <dd>The 12-month windows overlap, so days within a zone are not independent observations and each company only has a handful of separate episodes. Returns exclude dividends. A discount can persist for a long time, and a company's normal level can shift permanently. Past patterns say nothing certain about the future.</dd>
-    </dl>
-  </details>
-
+  <!-- FOOTER -->
   <footer>
     <span>⚠ For informational purposes only — not financial advice.</span>
-    <span>Data: <a href="https://ibindex.se/ibi/#/index">ibindex.se</a> · <a href="https://alex30free.github.io/stocklab/">StockLab</a></span>
+    <span>
+      <a href="https://alex30free.github.io/swedish-rsl-screener/">RSL</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/swedish-stock-screener/">Low-Risk</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/swedish-compound-momentum/">SE Momentum</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/german-momentum-screener/">DE Momentum</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/asset-momentum-screener/">Asset Alloc</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/stock-ranking/">QVMRank</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/Dalio/">Cycle Navigator</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/Gary/">Gary GEM</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/ib-discount-tracker/">IB Discount</a>
+    </span>
   </footer>
+
 </div>
-
-<script>
-(function () {
-  const TH = 1;
-  let DATA = null, SEL = 'INVE B', YEARS = 7;
-  function avgOf(rows, years) {
-    if (years === 'blend') {  // kept for older links; not offered in the UI
-      const a5 = avgOf(rows, 5), a7 = avgOf(rows, 7);
-      return { v: (a5.v + a7.v) / 2, from: a7.from, full: a7.full, blend: true };
-    }
-    const n = years * 12, w = rows.slice(-n);
-    return { v: w.reduce((a, r) => a + r.v, 0) / w.length, from: w[0].date, full: rows.length >= n };
-  }
-  function avgLabel(a, short) {
-    if (!a.full) return (short ? 'avg since ' : 'Average since ') + d3.utcFormat('%Y')(a.from);
-    if (a.blend) return short ? '5+7y avg' : '5- and 7-year average';
-    return short ? YEARS + 'y avg' : YEARS + '-year average';
-  }
-  // Zone statistics: the 7-year average and σ (older data files fall back to the 3-year fields).
-  function Z(c) {
-    const n = c.now;
-    if (n.zone === 'short') return { z: null, mean: n.mean_7y, sd: n.sd_7y, short: true };
-    if (n.z_7y != null) return { z: n.z_7y, mean: n.mean_7y, sd: n.sd_7y };
-    return { z: n.z_3y, mean: n.mean_3y, sd: n.sd_3y };
-  }
-  const f1 = d3.format('.1f');
-  const fzRaw = d3.format('+.1f');
-  const fz = (v) => v == null ? '–' : fzRaw(v);
-  const nm = (c) => c.name + (c.in_index === false ? ' °' : '');
-  const fval = (v) => v == null ? '–' : (v < 0 ? f1(-v) + '% premium' : f1(v) + '% discount');
-  const fshort = (v) => v == null ? '–' : (v < 0 ? f1(-v) + '% prem' : f1(v) + '% disc');
-  const fret = (v) => v == null ? '–' : d3.format('+.1f')(v) + '%';
-  const fpct = (v) => v == null ? '–' : d3.format('.0f')(v) + '%';
-  const zcls = (z) => z == null ? '' : (z >= TH ? 'buy' : (z <= -TH ? 'sell' : ''));
-  const zcol = (z) => z == null ? 'var(--muted)' : (z >= TH ? 'var(--buy)' : (z <= -TH ? 'var(--sell)' : 'var(--muted)'));
-  const zname = (z) => z == null ? 'Too little history' : (z >= TH ? 'Buy zone' : (z <= -TH ? 'Sell zone' : 'Neutral'));
-  const fmonth = d3.utcFormat('%b %Y');
-
-  function monthly(c) {
-    const [y, m] = c.monthly.start.split('-').map(Number);
-    return c.monthly.v.map((v, i) => ({ date: new Date(Date.UTC(y, m - 1 + i, 15)), v, mu: c.monthly.mu[i], hi: c.monthly.hi[i], lo: c.monthly.lo[i] }));
-  }
-  function measure(svg, strings, cls) {
-    const g = svg.append('g').attr('visibility', 'hidden');
-    let w = 0;
-    strings.forEach((s) => { w = Math.max(w, g.append('text').attr('class', cls || 'tick').text(s).node().getComputedTextLength()); });
-    g.remove();
-    return w;
-  }
-  function tip(el) { const t = document.createElement('div'); t.className = 'tip'; t.hidden = true; el.appendChild(t); return t; }
-  function showTip(el, t, lines, x, y) {
-    t.replaceChildren();
-    lines.forEach(([txt, dim]) => { const d = document.createElement('div'); if (dim) d.className = 'dim'; d.textContent = txt; t.appendChild(d); });
-    t.hidden = false;
-    const w = t.offsetWidth, h = t.offsetHeight;
-    let left = x + 12; if (left + w > el.clientWidth) left = x - w - 12;
-    t.style.left = Math.max(0, left) + 'px';
-    t.style.top = Math.max(0, y - h - 8) + 'px';
-  }
-  function select(tk, scroll) {
-    SEL = tk;
-    document.getElementById('pick').value = tk;
-    drawDetail(); drawTrend(); drawHoldings(); drawPrice(); drawGrid();
-    if (scroll) document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function drawExample() {
-    const c = DATA.companies.filter((d) => Z(d).z != null).reduce((a, d) => Math.abs(Z(d).z) > Math.abs(Z(a).z) ? d : a);
-    const n = c.now, zs = Z(c), z = zs.z;
-    document.getElementById('ex-name').textContent = c.name;
-    const zone = z >= TH ? 'the buy zone: unusually cheap compared with its own history'
-      : (z <= -TH ? 'the sell zone: unusually expensive compared with its own history' : 'neutral territory');
-    const p = document.getElementById('ex-text');
-    const intro = 'Over the last ' + (n.years != null && n.years < 7 ? f1(n.years) : '7') + ' years ' + c.name + ' has on average been at ' + fval(zs.mean) + ' (its normal level)';
-    p.textContent = intro + ', and it usually swings about ' + f1(zs.sd) + ' percentage points around that (that is its σ). Today it is at ' + fval(n.disc) +
-      '. Written as a discount, a premium is a negative number, so z = (' + f1(n.disc) + ' − ' + f1(zs.mean) + ') ÷ ' + f1(zs.sd) + ' = ' + fz(z) +
-      '. In words: today is ' + f1(Math.abs(z)) + ' normal swings ' + (z < 0 ? 'more expensive' : 'cheaper') + ' than usual, which puts it in ' + zone + '.';
-    // number line
-    const el = document.getElementById('ex-scale');
-    el.replaceChildren();
-    const W = Math.max(280, el.clientWidth), H = 74, m = 14;
-    const zmax = Math.max(3, Math.ceil(Math.abs(z)) + 0.5);
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
-    const x = d3.scaleLinear([-zmax, zmax], [m, W - m]);
-    svg.append('rect').attr('x', x(-zmax)).attr('width', x(-TH) - x(-zmax)).attr('y', 18).attr('height', 22).attr('fill', 'var(--sell)').attr('opacity', 0.15);
-    svg.append('rect').attr('x', x(-TH)).attr('width', x(TH) - x(-TH)).attr('y', 18).attr('height', 22).attr('fill', 'var(--muted)').attr('opacity', 0.15);
-    svg.append('rect').attr('x', x(TH)).attr('width', x(zmax) - x(TH)).attr('y', 18).attr('height', 22).attr('fill', 'var(--buy)').attr('opacity', 0.15);
-    const wide = W > 520;
-    svg.append('text').attr('class', 'zone').attr('x', x((-zmax - TH) / 2)).attr('y', 12).attr('text-anchor', 'middle').attr('fill', 'var(--sell)').text(wide ? 'SELL ZONE · EXPENSIVE' : 'SELL');
-    svg.append('text').attr('class', 'zone').attr('x', x(0)).attr('y', 12).attr('text-anchor', 'middle').attr('fill', 'var(--muted2)').text('NEUTRAL');
-    svg.append('text').attr('class', 'zone').attr('x', x((zmax + TH) / 2)).attr('y', 12).attr('text-anchor', 'middle').attr('fill', 'var(--buy)').text(wide ? 'BUY ZONE · CHEAP' : 'BUY');
-    svg.append('g').selectAll('text').data(d3.range(-Math.floor(zmax), Math.floor(zmax) + 1)).join('text').attr('class', 'tick')
-      .attr('x', (v) => x(v)).attr('y', H - 6).attr('text-anchor', 'middle').text((v) => v === 0 ? (wide ? 'average' : 'avg') : d3.format('+d')(v) + (wide ? 'σ' : ''));
-    svg.append('line').attr('x1', x(z)).attr('x2', x(z)).attr('y1', 14).attr('y2', 44).attr('stroke', 'var(--white)').attr('stroke-width', 2);
-    svg.append('circle').attr('cx', x(z)).attr('cy', 29).attr('r', 6).attr('fill', zcol(z));
-  }
-
-  function drawKpis() {
-    const cs = DATA.companies;
-    const buy = cs.filter((c) => Z(c).z >= TH), sell = cs.filter((c) => Z(c).z <= -TH);
-    const ext = cs.filter((c) => Z(c).z != null).reduce((a, c) => Math.abs(Z(c).z) > Math.abs(Z(a).z) ? c : a);
-    document.getElementById('k-buy').textContent = buy.length;
-    document.getElementById('k-buy-names').textContent = buy.map((c) => c.name).join(', ') || 'None';
-    document.getElementById('k-sell').textContent = sell.length;
-    document.getElementById('k-sell-names').textContent = sell.map((c) => c.name).join(', ') || 'None';
-    document.getElementById('k-ext').textContent = ext.name;
-    document.getElementById('k-ext-sub').textContent = 'z ' + fz(Z(ext).z) + ' · ' + fval(ext.now.disc);
-    document.getElementById('k-date').textContent = DATA.data_through;
-    const inIdx = DATA.companies.filter((c) => c.in_index !== false).length;
-    document.getElementById('k-date-sub').textContent = DATA.companies.length + ' companies' + (inIdx < DATA.companies.length ? ' · ' + inIdx + ' in the index' : '');
-    document.getElementById('updated').textContent = 'Updated ' + DATA.updated.slice(0, 10);
-  }
-
-  function drawOverview() {
-    const el = document.getElementById('c-overview');
-    el.replaceChildren();
-    const rows = DATA.companies.map((c) => { const zs = Z(c); return { tk: c.ticker, name: c.name, z3: zs.z, now: c.now.disc, m3: zs.mean, sd: zs.sd }; })
-      .filter((r) => r.z3 != null).sort((a, b) => b.z3 - a.z3);
-    const unrated = DATA.companies.filter((c) => Z(c).z == null);
-    const un = document.getElementById('unrated');
-    un.textContent = unrated.length ? 'Not rated, under 2 years of data: ' + unrated.map((c) => c.name + ' (' + f1(c.now.years) + ' y)').join(', ') + '.' : '';
-    const W = Math.max(300, el.clientWidth), rh = 30, top = 30, H = top + rows.length * rh + 28;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
-    const wide = W >= 640;
-    const lab = (r) => wide ? fshort(r.now) + '  · normal ' + fshort(r.m3) : fshort(r.now);
-    const left = measure(svg, rows.map((r) => r.name), 'name') + 14;
-    const right = measure(svg, rows.map(lab)) + 18;
-    const zmax = Math.max(3, Math.ceil(d3.max(rows, (r) => Math.abs(r.z3)) * 2) / 2 + 0.3);
-    const x = d3.scaleLinear([-zmax, zmax], [left, W - right]);
-    const y0 = top - 6, h0 = rows.length * rh + 6;
-    svg.append('rect').attr('x', x(-zmax)).attr('width', x(-TH) - x(-zmax)).attr('y', y0).attr('height', h0).attr('fill', 'var(--sell)').attr('opacity', 0.07);
-    svg.append('rect').attr('x', x(TH)).attr('width', x(zmax) - x(TH)).attr('y', y0).attr('height', h0).attr('fill', 'var(--buy)').attr('opacity', 0.07);
-    svg.append('text').attr('class', 'zone').attr('x', x(-zmax) + 4).attr('y', 16).attr('fill', 'var(--sell)').text(wide ? 'SELL ZONE · EXPENSIVE' : 'SELL');
-    svg.append('text').attr('class', 'zone').attr('x', x(zmax) - 4).attr('y', 16).attr('text-anchor', 'end').attr('fill', 'var(--buy)').text(wide ? 'BUY ZONE · CHEAP' : 'BUY');
-    [-TH, 0, TH].forEach((v) => svg.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', y0).attr('y2', y0 + h0)
-      .attr('stroke', v === 0 ? 'var(--border2)' : 'var(--ref)').attr('stroke-dasharray', v === 0 ? null : '3 3').attr('opacity', v === 0 ? 1 : 0.6));
-    svg.append('g').selectAll('text').data(d3.range(-Math.floor(zmax), Math.floor(zmax) + 1)).join('text').attr('class', 'tick')
-      .attr('x', (v) => x(v)).attr('y', H - 8).attr('text-anchor', 'middle').text((v) => v === 0 ? '0' : d3.format('+d')(v) + 'σ');
-    const t = tip(el);
-    const g = svg.append('g').selectAll('g').data(rows).join('g').attr('transform', (r, i) => `translate(0,${top + i * rh + rh / 2})`).style('cursor', 'pointer');
-    g.append('rect').attr('y', -rh / 2).attr('width', W).attr('height', rh).attr('fill', 'transparent');
-    g.append('text').attr('class', 'name').attr('x', left - 10).attr('dy', '0.32em').attr('text-anchor', 'end').text((r) => r.name);
-    g.append('line').attr('x1', x(0)).attr('x2', (r) => x(r.z3)).attr('stroke', 'var(--border2)').attr('stroke-width', 2);
-    g.append('circle').attr('cx', (r) => x(r.z3)).attr('r', 6).attr('fill', (r) => zcol(r.z3));
-    g.append('text').attr('class', 'tick').attr('x', W - right + 10).attr('dy', '0.32em').text(lab);
-    g.on('click', (e, r) => select(r.tk, true))
-      .on('pointermove', (e, r) => { const [px, py] = d3.pointer(e, el); showTip(el, t, [[r.name + ' · ' + zname(r.z3), true], ['Today  ' + fval(r.now)], ['Normal ' + fval(r.m3)], ['σ ' + f1(r.sd) + ' pp   z ' + fz(r.z3)]], px, py); })
-      .on('pointerleave', () => { t.hidden = true; });
-  }
-
-  function drawDetail() {
-    const el = document.getElementById('c-detail');
-    el.replaceChildren();
-    const c = DATA.companies.find((d) => d.ticker === SEL) || DATA.companies[0];
-    const rows = monthly(c).filter((r) => r.v != null);
-    const avg = avgOf(rows, YEARS);
-    const last = rows[rows.length - 1];
-    const avgName = avgLabel(avg, true);
-
-    // stats line above the chart
-    const st = document.getElementById('avg-stats');
-    st.replaceChildren();
-    const diff = last.v - avg.v;   // >0: wider discount than average (cheaper)
-    const zc = Z(c);
-    [['Today', fval(last.v)], [avgLabel(avg, false), fval(avg.v)],
-     ['Versus average', Math.abs(diff) < 0.05 ? 'at average' : (diff > 0 ? 'cheaper by ' : 'dearer by ') + f1(Math.abs(diff)) + ' pp'],
-     ['Zone', zc.z == null ? zname(null) : zname(zc.z) + ' (z ' + fz(zc.z) + ')']]
-      .forEach(([l, v], i) => {
-        const d = document.createElement('div');
-        const a = document.createElement('span'); a.className = 'lbl'; a.textContent = l;
-        const b = document.createElement('span'); b.className = 'val'; b.textContent = v;
-        if (i === 2 && Math.abs(diff) >= 0.05) b.style.color = diff > 0 ? 'var(--buy)' : 'var(--sell)';
-        if (i === 3) b.style.color = zcol(zc.z) === 'var(--muted)' ? '' : zcol(zc.z);
-        d.append(a, b); st.appendChild(d);
-      });
-    document.getElementById('avg-legend').textContent = avgLabel(avg, false);
-
-    const W = Math.max(300, el.clientWidth), H = 380, mt = 14, mb = 28;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
-    const ext = d3.extent(rows.map((r) => r.v).concat([0, avg.v]));
-    const y = d3.scaleLinear(ext, [mt, H - mb]).nice();   // premium (negative) at the top
-    const yt = y.ticks(7);
-    const fa = (v) => v === 0 ? 'NAV' : d3.format('.0f')(Math.abs(v)) + '% ' + (v < 0 ? 'prem' : 'disc');
-    const endLab = W < 560 ? fshort(last.v) : fval(last.v);
-    const left = measure(svg, yt.map(fa)) + 10;
-    const right = measure(svg, [endLab]) + 16;
-    const x = d3.scaleUtc(d3.extent(rows, (r) => r.date), [left, W - right]);
-    const y0 = y(0);
-    // green discount area below the 0% line
-    svg.append('rect').attr('x', left).attr('width', W - right - left).attr('y', y0).attr('height', Math.max(0, H - mb - y0)).attr('fill', 'var(--disc-tint)');
-    svg.append('g').selectAll('line').data(yt).join('line').attr('x1', left).attr('x2', W - right).attr('y1', y).attr('y2', y)
-      .attr('stroke', 'var(--border)');
-    svg.append('line').attr('x1', left).attr('x2', W - right).attr('y1', y0).attr('y2', y0).attr('stroke', 'var(--muted2)').attr('stroke-width', 1.5);
-    svg.append('g').selectAll('text').data(yt).join('text').attr('class', 'tick').attr('x', left - 8).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text(fa);
-    svg.append('g').selectAll('text').data(x.ticks(W < 560 ? 4 : 8)).join('text').attr('class', 'tick').attr('x', x).attr('y', H - 8).attr('text-anchor', 'middle').text(d3.utcFormat('%Y'));
-    // average line across the chart
-    const ya = y(avg.v);
-    svg.append('line').attr('x1', left).attr('x2', W - right).attr('y1', ya).attr('y2', ya).attr('stroke', 'var(--avg)').attr('stroke-width', 1.5).attr('stroke-dasharray', '5 4');
-    const avgText = avgName + ' ' + fshort(avg.v);
-    const labAbove = ya - mt > 18;
-    svg.append('text').attr('class', 'zone').attr('x', left + 6).attr('y', labAbove ? ya - 6 : ya + 14).attr('fill', 'var(--avg)').text(avgText);
-    // the series
-    svg.append('path').datum(rows).attr('d', d3.line().x((r) => x(r.date)).y((r) => y(r.v)))
-      .attr('fill', 'none').attr('stroke', 'var(--line)').attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
-    svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v)).attr('r', 4).attr('fill', 'var(--line)');
-    svg.append('text').attr('class', 'tick').attr('x', x(last.date) + 8).attr('y', y(last.v)).attr('dy', '0.32em').attr('fill', 'var(--white)').text(endLab);
-    const t = tip(el);
-    const hover = svg.append('g').style('display', 'none');
-    const rule = hover.append('line').attr('y1', mt).attr('y2', H - mb).attr('stroke', 'var(--ref)');
-    const dot = hover.append('circle').attr('r', 4).attr('fill', 'var(--line)');
-    const bis = d3.bisector((r) => r.date).center;
-    svg.append('rect').attr('x', left).attr('y', mt).attr('width', Math.max(0, W - right - left)).attr('height', H - mt - mb).attr('fill', 'transparent')
-      .on('pointermove', (e) => {
-        const [px] = d3.pointer(e, svg.node());
-        const r = rows[bis(rows, x.invert(px))];
-        if (!r) return;
-        hover.style('display', null);
-        rule.attr('x1', x(r.date)).attr('x2', x(r.date));
-        dot.attr('cx', x(r.date)).attr('cy', y(r.v));
-        const er = el.getBoundingClientRect(), sr = svg.node().getBoundingClientRect(), sc = sr.width / W;
-        showTip(el, t, [[c.name + ' · ' + fmonth(r.date), true], [fval(r.v)], [avgName + ' ' + fval(avg.v), true]],
-          x(r.date) * sc + sr.left - er.left, y(r.v) * sc + sr.top - er.top);
-      })
-      .on('pointerleave', () => { hover.style('display', 'none'); t.hidden = true; });
-  }
-
-  let WEEKS = 260;
-  function weeklyRows(c) {
-    if (!c.weekly || !c.weekly.close) return [];
-    const [y, m, d] = c.weekly.start.split('-').map(Number);
-    const t0 = Date.UTC(y, m - 1, d + 4);   // Friday of the first week
-    const cl = c.weekly.close;
-    return cl.map((v, i) => {
-      let ma = null;
-      if (i >= 39) { const w = cl.slice(i - 39, i + 1); if (w.every((q) => q != null)) ma = w.reduce((a, q) => a + q, 0) / 40; }
-      return { date: new Date(t0 + i * 7 * 864e5), v, ma };
-    }).filter((r) => r.v != null);
-  }
-  function maStatus(c) {
-    const rows = weeklyRows(c);
-    const last = rows[rows.length - 1];
-    if (!last || last.ma == null) return null;
-    let k = rows.length - 1;
-    const above = last.v >= last.ma;
-    while (k > 0 && rows[k - 1].ma != null && (rows[k - 1].v >= rows[k - 1].ma) === above) k--;
-    return { last, above, diff: (last.v / last.ma - 1) * 100, since: rows[k].date };
-  }
-  const fprice = (v) => v == null ? '–' : (v < 10 ? d3.format('.2f')(v) : d3.format(',.1f')(v)) + ' kr';
-  const fday = d3.utcFormat('%-d %b %Y');
-
-  function drawPrice() {
-    const el = document.getElementById('c-price');
-    el.replaceChildren();
-    const st = document.getElementById('price-stats');
-    st.replaceChildren();
-    const c = DATA.companies.find((d) => d.ticker === SEL) || DATA.companies[0];
-    document.getElementById('price-name').textContent = c.name;
-    let rows = weeklyRows(c);
-    if (!rows.length) {
-      const p = document.createElement('p'); p.className = 'note'; p.textContent = 'The price history appears after the next weekly data update.'; el.appendChild(p); return;
-    }
-    const ms = maStatus(c);
-    const items = [['Last close', fprice(rows[rows.length - 1].v)], ['40-week average', ms ? fprice(ms.last.ma) : '–']];
-    if (ms) items.push(['Price vs average', (ms.diff >= 0 ? '+' : '') + f1(ms.diff) + '% · ' + (ms.above ? 'above' : 'below')], [ms.above ? 'Above since' : 'Below since', fday(ms.since)]);
-    items.forEach(([l, v], i) => {
-      const d = document.createElement('div');
-      const a = document.createElement('span'); a.className = 'lbl'; a.textContent = l;
-      const b = document.createElement('span'); b.className = 'val'; b.textContent = v;
-      if (i === 2 && ms) b.style.color = ms.above ? 'var(--buy)' : 'var(--sell)';
-      d.append(a, b); st.appendChild(d);
-    });
-    if (WEEKS) rows = rows.slice(-WEEKS);
-    const W = Math.max(300, el.clientWidth), H = 340, mt = 14, mb = 28;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
-    const y = d3.scaleLinear(d3.extent(rows.flatMap((r) => r.ma == null ? [r.v] : [r.v, r.ma])), [H - mb, mt]).nice();
-    const yt = y.ticks(6);
-    const last = rows[rows.length - 1];
-    const fy = (v) => v < 10 ? d3.format('.2f')(v) : d3.format(',.0f')(v);
-    const endP = fprice(last.v), endM = last.ma == null ? '' : 'MA ' + fprice(last.ma);
-    const left = measure(svg, yt.map(fy)) + 10;
-    const right = measure(svg, [endP, endM]) + 16;
-    const x = d3.scaleUtc(d3.extent(rows, (r) => r.date), [left, W - right]);
-    svg.append('g').selectAll('line').data(yt).join('line').attr('x1', left).attr('x2', W - right).attr('y1', y).attr('y2', y).attr('stroke', 'var(--border)');
-    svg.append('g').selectAll('text').data(yt).join('text').attr('class', 'tick').attr('x', left - 8).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text(fy);
-    const span = (rows[rows.length - 1].date - rows[0].date) / (365.25 * 864e5);
-    svg.append('g').selectAll('text').data(x.ticks(W < 560 ? 4 : 8)).join('text').attr('class', 'tick').attr('x', x).attr('y', H - 8).attr('text-anchor', 'middle')
-      .text(span <= 3 ? d3.utcFormat('%b %Y') : d3.utcFormat('%Y'));
-    svg.append('path').datum(rows).attr('d', d3.line().defined((r) => r.ma != null).x((r) => x(r.date)).y((r) => y(r.ma)))
-      .attr('fill', 'none').attr('stroke', 'var(--avg)').attr('stroke-width', 2).attr('stroke-linejoin', 'round');
-    svg.append('path').datum(rows).attr('d', d3.line().x((r) => x(r.date)).y((r) => y(r.v)))
-      .attr('fill', 'none').attr('stroke', 'var(--white)').attr('stroke-width', 1.5).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
-    svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v)).attr('r', 4).attr('fill', 'var(--white)');
-    let yP = y(last.v), yM = last.ma == null ? null : y(last.ma);
-    if (yM != null && Math.abs(yP - yM) < 14) { if (yP <= yM) { yP -= (14 - (yM - yP)) / 2; yM = yP + 14; } else { yM -= (14 - (yP - yM)) / 2; yP = yM + 14; } }
-    svg.append('text').attr('class', 'tick').attr('x', x(last.date) + 8).attr('y', yP).attr('dy', '0.32em').attr('fill', 'var(--white)').text(endP);
-    if (yM != null) svg.append('text').attr('class', 'tick').attr('x', x(last.date) + 8).attr('y', yM).attr('dy', '0.32em').attr('fill', 'var(--avg)').text(endM);
-    const t = tip(el);
-    const hover = svg.append('g').style('display', 'none');
-    const rule = hover.append('line').attr('y1', mt).attr('y2', H - mb).attr('stroke', 'var(--ref)');
-    const dot = hover.append('circle').attr('r', 4).attr('fill', 'var(--white)');
-    const bis = d3.bisector((r) => r.date).center;
-    svg.append('rect').attr('x', left).attr('y', mt).attr('width', Math.max(0, W - right - left)).attr('height', H - mt - mb).attr('fill', 'transparent')
-      .on('pointermove', (e) => {
-        const [px] = d3.pointer(e, svg.node());
-        const r = rows[bis(rows, x.invert(px))];
-        if (!r) return;
-        hover.style('display', null);
-        rule.attr('x1', x(r.date)).attr('x2', x(r.date));
-        dot.attr('cx', x(r.date)).attr('cy', y(r.v));
-        const lines = [[c.name + ' · week of ' + fday(r.date), true], ['Close ' + fprice(r.v)]];
-        if (r.ma != null) lines.push(['40w avg ' + fprice(r.ma)], [(r.v >= r.ma ? 'Above by ' : 'Below by ') + f1(Math.abs(r.v / r.ma - 1) * 100) + '%', true]);
-        const er = el.getBoundingClientRect(), sr = svg.node().getBoundingClientRect(), sc = sr.width / W;
-        showTip(el, t, lines, x(r.date) * sc + sr.left - er.left, y(r.v) * sc + sr.top - er.top);
-      })
-      .on('pointerleave', () => { hover.style('display', 'none'); t.hidden = true; });
-  }
-
-  function drawTrend() {
-    const el = document.getElementById('c-trend');
-    el.replaceChildren();
-    const c = DATA.companies.find((d) => d.ticker === SEL) || DATA.companies[0];
-    const add = (tag, cls, text, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; (parent || el).appendChild(e); return e; };
-    add('div', 'hold-title', 'Share price · 40-week MA');
-    const all = weeklyRows(c);
-    const ms = maStatus(c);
-    if (!all.length || !ms) { add('div', 'hold-note', 'Price trend appears after the next weekly data update.'); return; }
-    const badge = add('div', 'trend-badge', ms.above ? '▲ ABOVE MA40 · UPTREND' : '▼ BELOW MA40 · DOWNTREND');
-    badge.style.color = ms.above ? 'var(--buy)' : 'var(--sell)';
-    badge.style.background = ms.above ? 'rgba(0,229,160,0.10)' : 'rgba(255,92,108,0.10)';
-    const g = add('div', 'trend-stats');
-    [['Close', fprice(ms.last.v)], ['MA40', fprice(ms.last.ma)],
-     ['vs MA40', (ms.diff >= 0 ? '+' : '') + f1(ms.diff) + '%'], [ms.above ? 'Above since' : 'Below since', d3.utcFormat('%-d %b %Y')(ms.since)]]
-      .forEach(([l, v], i) => { const d = add('div', null, null, g); add('span', 'lbl', l, d); const b = add('span', 'val', v, d); if (i === 2) b.style.color = ms.above ? 'var(--buy)' : 'var(--sell)'; });
-    const rows = all.slice(-104);
-    const box = add('div', 'trend-chart');
-    const W = Math.max(200, el.clientWidth - 28), H = 120;
-    const svg = d3.select(box).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
-    const x = d3.scaleUtc(d3.extent(rows, (r) => r.date), [2, W - 6]);
-    const y = d3.scaleLinear(d3.extent(rows.flatMap((r) => r.ma == null ? [r.v] : [r.v, r.ma])), [H - 16, 6]).nice();
-    svg.append('path').datum(rows).attr('d', d3.line().defined((r) => r.ma != null).x((r) => x(r.date)).y((r) => y(r.ma)))
-      .attr('fill', 'none').attr('stroke', 'var(--avg)').attr('stroke-width', 2);
-    svg.append('path').datum(rows).attr('d', d3.line().x((r) => x(r.date)).y((r) => y(r.v)))
-      .attr('fill', 'none').attr('stroke', 'var(--white)').attr('stroke-width', 1.3).attr('stroke-linejoin', 'round');
-    const last = rows[rows.length - 1];
-    svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v)).attr('r', 3).attr('fill', 'var(--white)');
-    svg.append('text').attr('class', 'tick').attr('x', 2).attr('y', H - 2).text(d3.utcFormat('%b %Y')(rows[0].date));
-    svg.append('text').attr('class', 'tick').attr('x', W - 6).attr('y', H - 2).attr('text-anchor', 'end').text('2 years');
-    const a = add('a', 'trend-more', 'Full price chart ↓');
-    a.href = '#price';
-  }
-
-  function drawHoldings() {
-    const el = document.getElementById('c-hold');
-    el.replaceChildren();
-    const c = DATA.companies.find((d) => d.ticker === SEL) || DATA.companies[0];
-    const h = c.holdings;
-    const add = (tag, cls, text, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; (parent || el).appendChild(e); return e; };
-    add('div', 'hold-title', 'Largest holdings · ' + c.name);
-    if (!h) { add('div', 'hold-note', 'No holdings data available.'); return; }
-    add('div', 'hold-date', 'Share of NAV' + (h.date ? ' · as of ' + h.date : ''));
-    const rows = h.top_listed.map((x) => [x.name, x.pct, '']);
-    const extra = [];
-    if (h.unlisted_pct >= 0.5) extra.push(['Unlisted holdings (total)', h.unlisted_pct, 'unl']);
-    if (h.cash_pct >= 1) extra.push(['Cash & interest-bearing', h.cash_pct, 'csh']);
-    const max = Math.max(1, ...rows.concat(extra).map((r) => r[1]));
-    const row = (r, parent) => {
-      const d = add('div', 'hold-row', null, parent);
-      const l = add('div', 'hold-lab', null, d);
-      add('span', null, r[0], l).title = r[0];
-      add('span', null, f1(r[1]) + '%', l);
-      const b = add('div', 'hold-bar', null, d);
-      const i = add('i', r[2], null, b);
-      i.style.width = Math.max(1, r[1] / max * 100) + '%';
-    };
-    if (!rows.length) add('div', 'hold-note', 'No listed holdings.');
-    rows.forEach((r) => row(r));
-    if (extra.length) { const sep = add('div', 'hold-sep'); extra.forEach((r) => row(r, sep)); }
-    const shown = rows.concat(extra).reduce((a, r) => a + r[1], 0);
-    add('div', 'hold-note', 'Top ' + rows.length + ' listed' + (extra.length ? ' plus unlisted/cash' : '') + ' = ' + f1(shown) + '% of NAV. Source: ibindex.se, latest reported holdings.');
-  }
-
-  function drawGrid() {
-    const el = document.getElementById('c-grid');
-    el.replaceChildren();
-    DATA.companies.forEach((c) => {
-      const rows = monthly(c).filter((r) => r.v != null);
-      const last = rows[rows.length - 1];
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'mini'; b.setAttribute('aria-pressed', String(c.ticker === SEL));
-      b.addEventListener('click', () => select(c.ticker, true));
-      const head = document.createElement('div'); head.className = 'mini-head';
-      const n = document.createElement('span'); n.className = 'mini-name'; n.textContent = c.name;
-      const v = document.createElement('span'); v.className = 'mini-val'; v.textContent = fshort(last.v);
-      head.append(n, v); b.appendChild(head); el.appendChild(b);
-      const w = Math.max(140, b.clientWidth - 20), h = 80;
-      const svg = d3.select(b).append('svg').attr('width', '100%').attr('height', h).attr('viewBox', `0 0 ${w} ${h}`).style('display', 'block').style('margin-top', '6px');
-      const avg = avgOf(rows, YEARS);
-      const x = d3.scaleUtc(d3.extent(rows, (r) => r.date), [2, w - 6]);
-      const y = d3.scaleLinear(d3.extent(rows.map((r) => r.v).concat([0])), [4, h - 4]);
-      svg.append('rect').attr('x', 2).attr('width', w - 8).attr('y', y(0)).attr('height', Math.max(0, h - 4 - y(0))).attr('fill', 'var(--disc-tint)');
-      svg.append('line').attr('x1', 2).attr('x2', w - 6).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--muted)');
-      svg.append('line').attr('x1', 2).attr('x2', w - 6).attr('y1', y(avg.v)).attr('y2', y(avg.v)).attr('stroke', 'var(--avg)').attr('stroke-dasharray', '4 3');
-      svg.append('path').datum(rows).attr('d', d3.line().x((r) => x(r.date)).y((r) => y(r.v))).attr('fill', 'none').attr('stroke', 'var(--line)').attr('stroke-width', 1.5).attr('stroke-linejoin', 'round');
-      svg.append('circle').attr('cx', x(last.date)).attr('cy', y(last.v)).attr('r', 3).attr('fill', 'var(--line)');
-    });
-  }
-
-  function td(tr, text, cls) { const c = document.createElement('td'); c.textContent = text; if (cls) c.className = cls; tr.appendChild(c); }
-
-  function drawTables() {
-    const tn = document.getElementById('t-now');
-    tn.replaceChildren();
-    DATA.companies.slice().sort((a, b) => Z(b).z - Z(a).z).forEach((c) => {
-      const n = c.now, zs = Z(c), tr = document.createElement('tr'), k = zcls(zs.z);
-      td(tr, nm(c)); td(tr, fval(n.disc)); td(tr, fval(n.mean_5y)); td(tr, n.mean_7y == null ? '–' : fval(n.mean_7y)); td(tr, fval(zs.mean)); td(tr, f1(zs.sd)); td(tr, fz(zs.z), k); td(tr, fpct(n.pct_5y)); td(tr, zname(zs.z), k);
-      const msx = maStatus(c); td(tr, msx ? (msx.diff >= 0 ? '+' : '') + f1(msx.diff) + '% ' + (msx.above ? '▲' : '▼') : '–', msx ? (msx.above ? 'buy' : 'sell') : '');
-      tn.appendChild(tr);
-    });
-    const tb = document.getElementById('t-bt');
-    tb.replaceChildren();
-    const cs = DATA.companies.slice().sort((a, b) => a.name.localeCompare(b.name, 'sv'));
-    cs.forEach((c) => {
-      const b = c.backtest, tr = document.createElement('tr');
-      td(tr, nm(c));
-      td(tr, fret(b.buy.ret), b.buy.ret != null && b.buy.ret > b.all.ret ? 'buy' : '');
-      td(tr, fpct(b.buy.up));
-      td(tr, fret(b.sell.ret), b.sell.ret != null && b.sell.ret < b.all.ret ? 'sell' : '');
-      td(tr, fpct(b.sell.up));
-      td(tr, fret(b.all.ret));
-      td(tr, b.buy.ddisc == null ? '–' : fz(b.buy.ddisc) + ' pp');
-      td(tr, b.sell.ddisc == null ? '–' : fz(b.sell.ddisc) + ' pp');
-      td(tr, d3.format(',')(b.buy.days) + ' / ' + d3.format(',')(b.sell.days));
-      tb.appendChild(tr);
-    });
-    const avg = (k) => { const v = cs.map((c) => c.backtest[k].ret).filter((q) => q != null); return v.reduce((a, q) => a + q, 0) / v.length; };
-    const better = cs.filter((c) => c.backtest.buy.ret != null && c.backtest.buy.ret > c.backtest.all.ret).length;
-    document.getElementById('bt-summary').innerHTML = '';
-    const p = document.getElementById('bt-summary');
-    const parts = [
-      'Averaged across companies, the share price return over the 12 months after a day in the buy zone was ', [fret(avg('buy')), 'buy'], ', ',
-      [fret(avg('sell')), 'sell'], ' after a day in the sell zone, and ', [fret(avg('all')), ''], ' across all days. The buy zone beat the average for ',
-      [better + ' of ' + cs.filter((c) => c.backtest.buy.ret != null).length, ''], ' companies with enough history.'
-    ];
-    parts.forEach((x) => { if (typeof x === 'string') p.appendChild(document.createTextNode(x)); else { const s = document.createElement('strong'); s.textContent = x[0]; if (x[1]) s.className = x[1]; p.appendChild(s); } });
-  }
-
-  function drawAll() { drawOverview(); drawDetail(); drawTrend(); drawHoldings(); drawPrice(); drawGrid(); if (document.getElementById('learn').open) drawExample(); }
-
-  fetch('data.json', { cache: 'no-cache' })
-    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then((d) => {
-      DATA = d;
-      d.companies.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
-      if (!d.companies.some((c) => c.ticker === SEL)) SEL = d.companies[0].ticker;
-      const pick = document.getElementById('pick');
-      d.companies.forEach((c) => pick.appendChild(new Option(c.name, c.ticker)));
-      pick.value = SEL;
-      pick.addEventListener('change', () => select(pick.value, false));
-      document.querySelectorAll('#range-seg button').forEach((b) => b.addEventListener('click', () => {
-        WEEKS = Number(b.dataset.weeks);
-        document.querySelectorAll('#range-seg button').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-        drawPrice();
-      }));
-      document.querySelectorAll('#avg-seg button').forEach((b) => b.addEventListener('click', () => {
-        YEARS = Number(b.dataset.years);
-        document.querySelectorAll('#avg-seg button').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-        drawDetail(); drawGrid();
-      }));
-      drawKpis(); drawTables(); drawAll(); drawExample();
-      document.getElementById('learn-link').addEventListener('click', () => { document.getElementById('learn').open = true; });
-      document.getElementById('learn').addEventListener('toggle', drawExample);
-      let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
-    })
-    .catch((e) => {
-      document.getElementById('updated').textContent = 'Could not load data';
-      document.getElementById('c-overview').innerHTML = '<p class="err">Could not load data.json (' + String(e.message).replace(/[<>&]/g, '') + ')</p>';
-    });
-})();
-</script>
 </body>
 </html>
