@@ -223,6 +223,7 @@
     .card-qvm::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,200,212,0.08) 0%, transparent 65%); }
     .card-eco::before { background: radial-gradient(ellipse at 80% 20%, rgba(204,68,255,0.07) 0%, transparent 65%); }
     .card-ibx::before { background: radial-gradient(ellipse at 80% 80%, rgba(255,122,89,0.08) 0%, transparent 65%); }
+    .card-sec::before { background: radial-gradient(ellipse at 20% 20%, rgba(0,200,212,0.08) 0%, transparent 65%); }
     .card-gem::before { background: radial-gradient(ellipse at 20% 80%, rgba(240,192,64,0.08) 0%, transparent 65%); }
 
     .card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
@@ -236,6 +237,7 @@
     .card-qvm:hover { border-color: rgba(0,200,212,0.45); }
     .card-eco:hover { border-color: rgba(204,68,255,0.4); }
     .card-ibx:hover { border-color: rgba(255,122,89,0.45); }
+    .card-sec:hover { border-color: rgba(0,200,212,0.45); }
     .card-gem:hover { border-color: rgba(240,192,64,0.4); }
 
     /* Top accent line */
@@ -248,6 +250,7 @@
     .card-qvm .card-line { background: var(--teal); }
     .card-eco .card-line { background: var(--purple); }
     .card-ibx .card-line { background: var(--coral); }
+    .card-sec .card-line { background: linear-gradient(90deg, var(--teal), var(--accent2)); }
     .card-gem .card-line { background: linear-gradient(90deg, var(--gold), var(--amber-hi)); }
 
     /* Corner number */
@@ -281,6 +284,7 @@
     .card-qvm .card-tag { color: var(--teal);      border-color: rgba(0,200,212,0.30);   background: rgba(0,200,212,0.07); }
     .card-eco .card-tag { color: var(--purple);    border-color: rgba(204,68,255,0.28);  background: rgba(204,68,255,0.07); }
     .card-ibx .card-tag { color: var(--coral);     border-color: rgba(255,122,89,0.30);  background: rgba(255,122,89,0.07); }
+    .card-sec .card-tag { color: var(--teal);      border-color: rgba(0,200,212,0.30);   background: rgba(0,200,212,0.07); }
     .card-gem .card-tag { color: var(--gold);      border-color: rgba(240,192,64,0.28);  background: rgba(240,192,64,0.06); }
 
     /* Title */
@@ -302,6 +306,7 @@
     .card-qvm .card-title em { font-style: normal; color: var(--teal); }
     .card-eco .card-title em { font-style: normal; color: var(--purple); }
     .card-ibx .card-title em { font-style: normal; color: var(--coral); }
+    .card-sec .card-title em { font-style: normal; color: var(--teal); }
     .card-gem .card-title em { font-style: normal; color: var(--gold); }
 
     /* Description */
@@ -351,6 +356,7 @@
     .card-aam .card-cta { background: var(--amber-hi); border-color: var(--amber-hi); }
     .card-qvm .card-cta { background: var(--teal);     border-color: var(--teal); }
     .card-eco .card-cta { background: var(--purple);   border-color: var(--purple); }
+    .card-sec .card-cta { background: var(--teal);     border-color: var(--teal); }
     .card-gem .card-cta { background: var(--gold);     border-color: var(--gold); }
     .card-ibx .card-cta { background: var(--coral);    border-color: var(--coral); }
 
@@ -615,15 +621,34 @@
       <div class="card-tag">NAV Discount · Swedish Investment Companies</div>
       <div class="card-title">Investment Company<br><em>Discount Tracker</em></div>
       <div class="card-desc">
-        Discount or premium to net asset value for 17 Swedish investment companies tracked by ibindex — Investor, Industrivärden, Latour, Kinnevik and more — charted since 2014 against each company's own history. Flags statistical buy and sell zones (±1σ from the 7-year average) backtests how they played out, and shows each company's largest holdings and share price against its 40-week moving average.
+        Discount or premium to net asset value for 16 Swedish investment companies tracked by ibindex — Investor, Industrivärden, Latour, Kinnevik and more — charted since 2014 against each company's own history. Flags statistical buy and sell zones (±1σ from the 7-year average) backtests how they played out, and shows each company's largest holdings and share price against its 40-week moving average.
       </div>
       <div class="card-stats">
         <span class="card-stat">ibindex data</span>
-        <span class="card-stat">17 companies</span>
+        <span class="card-stat">16 companies</span>
         <span class="card-stat">Since 2014</span>
         <span class="card-stat">z-score zones</span>
         <span class="card-stat">Backtest</span>
         <span class="card-stat">Top holdings</span>
+        <span class="card-stat">40w MA</span>
+        <span class="card-stat">Weekly</span>
+      </div>
+      <div class="card-cta">Open Tracker <span class="arrow">→</span></div>
+    </a>
+
+    <!-- 10: Swedish sector trends — full width -->
+    <a href="https://alex30free.github.io/sector-trends/" class="card card-sec" style="grid-column: 1 / -1;">
+      <div class="card-line"></div>
+      <div class="card-num">10</div>
+      <div class="card-tag">Trend Following · Swedish Sectors</div>
+      <div class="card-title">Swedish Sector<br><em>Trends</em></div>
+      <div class="card-desc">
+        Ten home-made equal-weight sector indices — banks, gaming, telecom, construction, real estate, consumer staples, forestry, consumer durables, commodities and industrials — built from 42 Swedish stocks since 2006, each against its 40-week moving average. Opens with a short summary of which sectors are in up- or downtrend right now.
+      </div>
+      <div class="card-stats">
+        <span class="card-stat">10 sectors</span>
+        <span class="card-stat">42 stocks</span>
+        <span class="card-stat">Since 2006</span>
         <span class="card-stat">40w MA</span>
         <span class="card-stat">Weekly</span>
       </div>
@@ -671,6 +696,8 @@
       <a href="https://alex30free.github.io/Gary/">Gary GEM</a>
       &nbsp;·&nbsp;
       <a href="https://alex30free.github.io/ib-discount-tracker/">IB Discount</a>
+      &nbsp;·&nbsp;
+      <a href="https://alex30free.github.io/sector-trends/">Sector Trends</a>
     </span>
   </footer>
 
